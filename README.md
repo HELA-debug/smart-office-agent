@@ -530,3 +530,9 @@ curl -s http://127.0.0.1:8080/api/v1/health
 | [contracts/README.md](contracts/README.md) | 契约快照生成/校验与变更规则 |
 | [tests/README.md](tests/README.md) | 30 条 smoke 与 evals 用例映射 |
 | [deploy/migrations/0001_init.sql](deploy/migrations/0001_init.sql) | V2.0 四表 DDL 基线（V2.1 用 Alembic） |
+
+## 团队信息
+
+**由周口师范学院team love团队共同开发**
+**团队成员：孙子鹏、敬一搏、韩敬卓**
+**邮箱地址：17537902544@163.com**
