@@ -1,0 +1,6 @@
+[  1.6s] 打开工作台
+[ 23.9s] 新建会话 — 已点击
+[ 28.2s] 素材已上传 — C:\Users\16650\WorkBuddy\Worktrees\office-agent-mvp\master-d1f26b0f\data\samples\meeting_notes.docx
+[ 34.6s] 任务已发送
+[ 51.5s] 审批卡 — 已出现
+[ 54.9s] 已点击「批准并继续」

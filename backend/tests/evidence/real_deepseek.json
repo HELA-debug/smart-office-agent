@@ -1,0 +1,311 @@
+{
+  "label": "real_deepseek",
+  "base_url": "http://127.0.0.1:8001",
+  "health": {
+    "trace_id": "tr_bd6d481568",
+    "status": "ok",
+    "version": "0.2.0",
+    "git_sha": "b230706",
+    "mode": "real",
+    "provider": "deepseek",
+    "model": "deepseek-chat",
+    "degraded": false,
+    "mock": false,
+    "tools": 6,
+    "subagents": 3,
+    "skills": [
+      "weekly-report"
+    ],
+    "prompt_version": "1.0.0",
+    "engines": [
+      "mock",
+      "real",
+      "deepagents"
+    ],
+    "approval_tools": [
+      "mail.send"
+    ]
+  },
+  "thread_id": "th_d3261b67e6",
+  "uploads": [
+    {
+      "file_id": "art_b61b47d68e",
+      "artifact_id": "art_b61b47d68e",
+      "filename": "本周素材.txt",
+      "size": 359,
+      "type": "txt",
+      "ext": "txt",
+      "chars": 127,
+      "parsed": true,
+      "text_preview": "本周进展\n1. 完成登录与权限模块联调，覆盖 12 个接口。\n2. 工作台三栏布局与 SSE 流式渲染上线。\n关键数据\n周报生成平均耗时 1.1 秒，DOCX 平均 37KB。\n风险与问题\n真实模型超时重试策略仍需压测，存在 1 次超时风险。\n下周计划\n完成真实模型降级链路验证，并补齐审计页。",
+      "trace_id": "tr_353b09dc05",
+      "files": [
+        {
+          "file_id": "art_b61b47d68e",
+          "artifact_id": "art_b61b47d68e",
+          "filename": "本周素材.txt",
+          "size": 359,
+          "type": "txt",
+          "ext": "txt",
+          "chars": 127,
+          "parsed": true,
+          "text_preview": "本周进展\n1. 完成登录与权限模块联调，覆盖 12 个接口。\n2. 工作台三栏布局与 SSE 流式渲染上线。\n关键数据\n周报生成平均耗时 1.1 秒，DOCX 平均 37KB。\n风险与问题\n真实模型超时重试策略仍需压测，存在 1 次超时风险。\n下周计划\n完成真实模型降级链路验证，并补齐审计页。"
+        }
+      ]
+    },
+    {
+      "file_id": "art_f397d1be04",
+      "artifact_id": "art_f397d1be04",
+      "filename": "会议记录.docx",
+      "size": 36979,
+      "type": "docx",
+      "ext": "docx",
+      "chars": 133,
+      "parsed": true,
+      "text_preview": "本周工作素材\n本周进展\n1. 完成登录与权限模块联调，覆盖 12 个接口。\n2. 工作台三栏布局与 SSE 流式渲染上线。\n关键数据\n周报生成平均耗时 1.1 秒，DOCX 平均 37KB。\n风险与问题\n真实模型超时重试策略仍需压测，存在 1 次超时风险。\n下周计划\n完成真实模型降级链路验证，并补齐审计页。",
+      "trace_id": "tr_80d44d3a5d",
+      "files": [
+        {
+          "file_id": "art_f397d1be04",
+          "artifact_id": "art_f397d1be04",
+          "filename": "会议记录.docx",
+          "size": 36979,
+          "type": "docx",
+          "ext": "docx",
+          "chars": 133,
+          "parsed": true,
+          "text_preview": "本周工作素材\n本周进展\n1. 完成登录与权限模块联调，覆盖 12 个接口。\n2. 工作台三栏布局与 SSE 流式渲染上线。\n关键数据\n周报生成平均耗时 1.1 秒，DOCX 平均 37KB。\n风险与问题\n真实模型超时重试策略仍需压测，存在 1 次超时风险。\n下周计划\n完成真实模型降级链路验证，并补齐审计页。"
+        }
+      ]
+    }
+  ],
+  "duration_seconds": 50.12,
+  "download": {
+    "artifact_id": "art_9d755df464",
+    "status": 200,
+    "bytes": 37204,
+    "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  },
+  "run_started": {
+    "mode": "real",
+    "engine": "real",
+    "model": "deepseek-chat",
+    "provider": "deepseek",
+    "degraded": false
+  },
+  "run_failed": null,
+  "event_sequence": [
+    "run.started",
+    "plan.updated",
+    "message.delta",
+    "message.delta",
+    "message.completed",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "artifact.ready",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "approval.required",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "tool.started",
+    "tool.finished",
+    "plan.updated",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.delta",
+    "message.completed",
+    "plan.updated",
+    "run.completed"
+  ],
+  "event_count": 88,
+  "tools": [
+    {
+      "tool": "file.read",
+      "ok": true,
+      "duration_ms": 1,
+      "summary": "已读取 2 个文件，共 260 字"
+    },
+    {
+      "tool": "file.read",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "已读取 2 个文件，共 260 字"
+    },
+    {
+      "tool": "file.list",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "共 2 个素材文件，合计 260 字"
+    },
+    {
+      "tool": "todo.write",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "计划已更新（3 条）"
+    },
+    {
+      "tool": "file.read",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "已读取 1 个文件，共 127 字"
+    },
+    {
+      "tool": "file.read",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "已读取 1 个文件，共 133 字"
+    },
+    {
+      "tool": "doc.generate_report",
+      "ok": true,
+      "duration_ms": 34,
+      "summary": "已生成 DOCX《周报_2026-W43.docx》，6 个章节，37,204 字节"
+    },
+    {
+      "tool": "todo.write",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "计划已更新（3 条）"
+    },
+    {
+      "tool": "mail.send",
+      "ok": true,
+      "duration_ms": 9,
+      "summary": "邮件已写入 mock 发件箱（未真实外发）：20261023_144624_本周工作周报（2026-W43）_（材料未提供，请补充收件邮箱）.eml"
+    },
+    {
+      "tool": "todo.write",
+      "ok": true,
+      "duration_ms": 0,
+      "summary": "计划已更新（3 条）"
+    }
+  ],
+  "approval_events": [
+    {
+      "tool": "mail.send",
+      "risk": "high",
+      "approval_id": "a_3521bedf32"
+    }
+  ],
+  "artifact_ids": [
+    "art_9d755df464"
+  ],
+  "docx_paragraphs": [
+    "本周工作周报",
+    "生成时间：2026-10-23T14:46:15+08:00 ｜ 模式：real ｜ 来源：会议记录.docx",
+    "摘要",
+    "本报告基于 1 份素材整理：1. 完成登录与权限模块联调，覆盖 12 个接口；2. 工作台三栏布局与 SSE 流式渲染上线",
+    "本周进展",
+    "1. 完成登录与权限模块联调，覆盖 12 个接口。",
+    "2. 工作台三栏布局与 SSE 流式渲染上线。",
+    "关键数据",
+    "周报生成平均耗时 1.1 秒，DOCX 平均 37KB。",
+    "风险与问题",
+    "真实模型超时重试策略仍需压测，存在 1 次超时风险。",
+    "下周计划"
+  ],
+  "run_completed": {
+    "status": "completed",
+    "tokens": 26048,
+    "cost_cny": 0.058612,
+    "elapsed_ms": 46351,
+    "engine": "real",
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "degraded": false,
+    "stop_reason": "completed",
+    "approvals": [
+      {
+        "approval_id": "a_3521bedf32",
+        "tool": "mail.send",
+        "decision": "approved"
+      }
+    ],
+    "usage": {
+      "input_tokens": 24962,
+      "output_tokens": 1086,
+      "total_tokens": 26048,
+      "cost_cny": 0.058612,
+      "calls": 11,
+      "by_provider": [
+        {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "calls": 11,
+          "input_tokens": 24962,
+          "output_tokens": 1086,
+          "cost_cny": 0.058612
+        }
+      ],
+      "budget": 200000,
+      "currency": "CNY"
+    }
+  }
+}

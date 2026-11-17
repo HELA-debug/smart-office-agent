@@ -1,0 +1,37 @@
+# syntax=docker/dockerfile:1
+# office-agent-mvp Web 镜像：Vite 构建静态资源 + Nginx 反代 /api
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+# 依赖层缓存：lock 文件存在则优先 npm ci，否则 npm install
+COPY frontend/package*.json ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+COPY frontend/ ./
+# 生产环境同源部署，API 走 Nginx 反代，前端只用相对路径 /api
+ARG VITE_API_BASE=/api
+ENV VITE_API_BASE=${VITE_API_BASE}
+RUN npm run build
+
+FROM nginx:1.27-alpine
+
+# 通过模板渲染 client_max_body_size（与后端 MAX_UPLOAD_MB 联动）。
+# NGINX_ENVSUBST_FILTER 限定只替换 NGINX_ 前缀的变量，避免误伤 $host 等 nginx 变量。
+ENV NGINX_ENVSUBST_FILTER=NGINX_ \
+    NGINX_CLIENT_MAX_BODY_SIZE=20m
+
+COPY deploy/nginx.conf.template /etc/nginx/templates/default.conf.template
+# 片段必须放 snippets/：conf.d/*.conf 会被顶层 nginx.conf 自动 include，
+# location 级指令放进去会直接导致 nginx 启动失败。
+COPY deploy/nginx-proxy-common.conf /etc/nginx/snippets/proxy-common.conf
+COPY deploy/nginx-sse.conf /etc/nginx/snippets/sse.conf
+COPY deploy/nginx-security-headers.conf /etc/nginx/snippets/security-headers.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=5 \
+    CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

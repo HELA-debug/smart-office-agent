@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+# office-agent-mvp API 镜像（V2.1 分层版）：FastAPI + Agent 运行时 + SQLAlchemy/Alembic + SQLite
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple \
+    PYTHONPATH=/app \
+    HOST=0.0.0.0 \
+    PORT=8000 \
+    # 默认 mock（无 Key、断网可演示）；真实模式用 ENGINE=real + DEEPSEEK_API_KEY
+    MOCK_MODE=true \
+    ENGINE=mock \
+    MODEL_PROVIDER=deepseek \
+    MODEL_NAME=deepseek-chat \
+    MODEL_FALLBACK_CHAIN=deepseek,qwen,glm,mock \
+    LOG_FORMAT=json \
+    DATABASE_URL=sqlite:////app/data/app.db \
+    UPLOAD_DIR=/app/data/uploads \
+    ARTIFACT_DIR=/app/data/artifacts \
+    OUTBOX_DIR=/app/data/outbox
+
+WORKDIR /app
+
+# 应用代码（backend/ 由后端负责人维护；镜像只读拷贝）
+COPY backend/ /app/backend/
+COPY scripts/ /app/scripts/
+
+# 依赖来源 = backend/pyproject.toml（唯一事实来源，避免与 requirements 漂移）
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -e /app/backend
+
+RUN mkdir -p /app/data/uploads /app/data/artifacts /app/data/outbox /app/data/samples /app/data/trash
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=8 \
+    CMD python -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3).status==200 else 1)"
+
+# 入口：V2.1 分层结构 backend.app.main:app（从 /app 运行，PYTHONPATH=/app）
+CMD ["sh", "-c", "python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

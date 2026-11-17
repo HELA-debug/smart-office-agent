@@ -1,0 +1,30 @@
+# CODEOWNERS（V2.1 B0 骨架）
+
+# 说明：以下为占位团队名，接入 GitHub 后请替换为真实用户名 / 团队（例如 @your-org/backend）。
+# 格式参考：https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# 默认：核心三人共同负责
+*                                   @office-agent/core
+
+# 后端 / Agent 内核 / 数据层 / 契约
+/backend/                           @office-agent/backend
+/deploy/migrations/                 @office-agent/backend
+
+# 前端 / 设计系统 / 前端测试
+/frontend/                          @office-agent/frontend
+
+# 质量、测试、CI、部署、契约快照
+/tests/                             @office-agent/qa
+/.github/                           @office-agent/qa
+/scripts/                           @office-agent/qa
+/deploy/                            @office-agent/qa
+/contracts/                         @office-agent/qa
+/docker-compose.yml                 @office-agent/qa
+/Dockerfile.api                     @office-agent/qa
+/Dockerfile.web                     @office-agent/qa
+
+# 文档与发布说明
+/docs/                              @office-agent/qa
+/README.md                          @office-agent/qa
+/CONTRIBUTING.md                    @office-agent/qa
+/CHANGELOG.md                       @office-agent/qa

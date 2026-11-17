@@ -1,0 +1,1173 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------
+   Design tokens（第 6.5 节约定 1：颜色/间距/字号写成 Tailwind 主题变量）
+   换皮只改这里，组件不写死色值。
+   ------------------------------------------------------------------ */
+@theme {
+  --font-sans:
+    'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', system-ui,
+    -apple-system, sans-serif;
+  --font-mono:
+    'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* 颜色
+     中性色统一走 slate 系（色相 ~215）：办公场景里偏冷的灰比偏暖的灰显得干净，
+     也不会和白底文档预览打架。明度阶梯（浅色）：canvas < shell < sunken < hover < surface。
+     —— 顺序看着反：亮色下「越白越靠前」，所以面板是纯白，凹陷/悬停才上灰。 */
+  --color-canvas: #f3f5f9;
+  /* 窗口最外沿（工作台三栏壳 / 独立窗口标题栏区）用色。
+     刻意与 canvas 同值：从工作台切到设置、审计这类子页面时，整扇窗口的底色
+     不应该变——上一版 shell 比 canvas 深一档，最大化窗口里翻页会看到整片背景
+     「换了一层色」，非常突兀。层级靠面板自己的描边 + 投影表达，不靠底色深浅。 */
+  --color-shell: #f3f5f9;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8fafc;
+  --color-surface-sunken: #eef2f7;
+  --color-surface-hover: #e7edf5; /* 交互行/按钮的 hover 底色：比 sunken 更深一档 */
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-ink: #0f172a;
+  --color-ink-soft: #334155;
+  /* 次要文字与注释小字压到「白底 ≥5:1 / 画布 ≥4.7:1」：
+     原来 muted 在白底 4.76、画布上 4.36，faint 只有 2.35（12px 的说明文字基本糊掉）。
+     实测口径见 docs/test-report-2026-10-28.md 的对比度一节。 */
+  --color-muted: #556377;
+  --color-faint: #5c6a7d;
+  --color-brand: #2563eb;
+  --color-brand-strong: #1d4ed8;
+  --color-brand-soft: #eff5ff;
+  /* 比 brand-soft 再深一档：「当前模型」那一行要压得住列表里的其它行，
+     只靠 #eff5ff 跟白底几乎分不出来 */
+  --color-brand-soft-strong: #d9e7fe;
+  --color-brand-line: #c9dbff;
+  /* 实色按钮与实色边框单独走一组：文字用的 brand 在深色下会被提亮，
+     直接拿它当按钮底色会在暗色主题里变成「浅蓝发白」 */
+  --color-brand-solid: #2563eb;
+  --color-brand-solid-hover: #1d4ed8;
+  --color-brand-border: #2563eb;
+  /* 气泡提示：浅色主题下不再是「一块纯黑」——白纸般的浮层 + 细描边，
+     只靠投影和背景拉开层次。纯黑气泡在浅色界面里像贴了一块黑胶布，
+     每次划过按钮都跳一下，反差过大。 */
+  --color-tooltip: #ffffff;
+  --color-tooltip-ink: #1f2937;
+  --color-ok: #067647;
+  --color-ok-soft: #ecfdf3;
+  --color-ok-line: #abefc6;
+  --color-warn: #b54708;
+  --color-warn-soft: #fffaeb;
+  --color-warn-line: #fedf89;
+  --color-danger: #b42318;
+  --color-danger-soft: #fef3f2;
+  --color-danger-line: #fecdca;
+  --color-accent: #6941c6;
+  --color-accent-soft: #f4f3ff;
+  --color-accent-line: #ddd6fe;
+
+  /* 发送按钮（输入框右下角那颗 32px 圆形控件）单独一组：
+     旧值静息用 surface-sunken(#eef2f7)，对白色输入框只有 1.09:1 —— 浅底浅图标，
+     按钮在白卡上「没有形状」；hover 的 surface-hover(#e7edf5) 又只深了 0.02 明度，
+     鼠标扫过去几乎看不出变化。这里改成「深 → 柔」的方向：
+       静息 face #64748b（对白底 4.76:1，实心、看得见）
+       悬停 face #cbd5e1（回落到 1.5:1 的柔和浅灰，图标同步压淡到 #475569）
+       按下 face #475569（回深一档，给点击一个落点）
+     注意：这是「深→浅」的倒向悬停，只有这颗按钮用——它默认太浅会被当成装饰，
+     而真正的实心主按钮（canSend 态）仍走 ink → ink-soft，也是同一方向。 */
+  --color-send-face: #64748b;
+  --color-send-ink: #ffffff;
+  --color-send-face-hover: #cbd5e1;
+  --color-send-ink-hover: #475569;
+  --color-send-face-active: #475569;
+
+  /* 文档预览的一对底色：doc-page = 纸，doc-backdrop = 纸后面的桌面。
+     不能直接复用 surface/surface-soft —— 深色主题里 surface 比 surface-soft 更暗，
+     套上去纸就成了「凹坑」。这两个值在深浅两套主题里都保持「纸比桌面亮一档」。 */
+  --color-doc-page: #ffffff;
+  --color-doc-backdrop: #eef2f7;
+
+  /* AI 语义色：整套 AI 交互只认这两个名字，不再各写各的色值。
+     ai = AI 产出的内容（回复/思考/推荐），用品牌蓝同族；
+     tool = 工具调用这类中性过程，用 accent 紫同族——保持「一个主强调 + 一个副强调」。
+     两组都是语义别名（值分别对齐 brand / accent），换皮时只改这里即可整体换调。 */
+  --color-ai: #2563eb;
+  --color-ai-soft: #eff4ff;
+  --color-ai-line: #c7d7fe;
+  --color-tool: #6941c6;
+  --color-tool-soft: #f4f3ff;
+  --color-tool-line: #ddd6fe;
+
+  /* 字号（正文 13/14，卡片标题 14，页面标题 16）
+     说明性小字（caption/mini）按 90% 基准缩完只有 9.9/10.8px，屏幕上偏吃力，
+     这里各上调 1px；正文及以上不动，保持「只放大注释小字」的视觉效果。
+
+     【为什么不是 rem】字号与「页面缩放」是两件事：rem 跟着 html 字号走，
+     一改字号间距和控件也跟着变，排版会跑样（用户明确要求拆开）。
+     这里改成 px × 0.9（历史上的 90% 基准）× --font-scale：
+       0.9 让默认值与本文件此前的渲染结果逐像素一致（12px → 10.8px）
+       --font-scale 只由「外观 · 字体大小」滑块写，默认 1
+     于是：调字号只动文字；调「界面缩放」（html 的 --ui-scale）只动间距与控件。 */
+  --text-caption: calc(12px * 0.9 * var(--font-scale, 1));
+  --text-caption--line-height: calc(17px * 0.9 * var(--font-scale, 1));
+  --text-mini: 0.8125rem; /* 13px（原 12） */
+  --text-mini: calc(13px * 0.9 * var(--font-scale, 1));
+  --text-mini--line-height: calc(19px * 0.9 * var(--font-scale, 1));
+  --text-body: calc(13px * 0.9 * var(--font-scale, 1)); /* 13px */
+  --text-body--line-height: calc(24px * 0.9 * var(--font-scale, 1));
+  --text-regular: calc(14px * 0.9 * var(--font-scale, 1)); /* 14px */
+  --text-regular--line-height: calc(24px * 0.9 * var(--font-scale, 1));
+  --text-title: calc(16px * 0.9 * var(--font-scale, 1)); /* 16px */
+  --text-title--line-height: calc(24px * 0.9 * var(--font-scale, 1));
+  --text-display: calc(22px * 0.9 * var(--font-scale, 1)); /* 22px */
+  --text-display--line-height: calc(30px * 0.9 * var(--font-scale, 1));
+
+  /* 间距（rem 单位跟着根字号缩放：见下方 html { font-size } 的 90% 基准） */
+  --spacing-gutter: 1.5rem;
+  --spacing-rail: 16.5rem; /* 264px @16 基准 */
+  --spacing-panel: 20rem; /* 320px @16 基准 */
+
+  /* 圆角 / 阴影
+     一档一件事，组件只挑名字不写数值；四种尺寸都由这里定，改一处全站跟着变：
+       xs      小方块：复选框、行内代码、代码块里的复制按钮
+       chip    标签块：产物类型角标这类「贴在文字上」的小块
+       control 控件：按钮、输入框、菜单行、工具提示
+       card    卡片：产物卡、设置分块
+       panel   外壳面板：左栏 / 对话区 / 右栏
+     这一版整体调大一档：原来的 4/5/6/7px 在 24px 高的控件上几乎是直角，
+     看着像没做过圆角；现在至少是「看得出圆」的半径。 */
+  --radius-xs: 0.375rem; /* 6px */
+  --radius-chip: 0.5rem; /* 8px */
+  --radius-control: 0.625rem; /* 10px */
+  --radius-card: 0.875rem; /* 14px */
+  /* 卡片式外壳：三块面板（左栏 / 对话区 / 右栏）各自的圆角，
+     比卡片的 14px 再大一档，浮在画布上才不像「切出来的方块」 */
+  --radius-panel: 1rem; /* 16px */
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  /* 面板投影：卡片式布局里面板要「浮起来」一点，比卡片阴影更柔更淡 */
+  --shadow-panel: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 14px -6px rgba(16, 24, 40, 0.1);
+  --shadow-pop: 0 12px 32px -8px rgba(16, 24, 40, 0.18);
+}
+
+/* ------------------------------------------------------------------
+   暗色主题：只覆盖变量，组件里的 bg-surface / text-ink 等类自动跟随。
+   挂在 html.dark（比 :root 高一档特异度），由 shared/lib/theme.ts 切换。
+   ------------------------------------------------------------------ */
+html.dark {
+  color-scheme: dark;
+
+  /* 明度阶梯（深色，越亮越靠前）：
+     canvas < shell < surface < surface-soft < surface-sunken < surface-hover。
+     外壳压到近黑、面板抬到 #1b1e24，两者明度差翻倍，卡片才真的「浮」得起来；
+     上一版 shell(#0e0e10) 与 surface(#1c1c1f) 挨得太近，三块面板糊成一片。 */
+  --color-canvas: #101317;
+  /* 与 canvas 同值：翻页时整扇窗口的底色不能变（见浅色主题同一行的说明）。
+     面板与外壳的层级改由 border-line + shadow-panel 承担。 */
+  --color-shell: #101317;
+  --color-surface: #1b1e24;
+  --color-surface-soft: #20242b;
+  --color-surface-sunken: #272c33;
+  --color-surface-hover: #2e343c;
+  --color-line: #2a2f37;
+  --color-line-strong: #3b424b;
+  --color-ink: #eef1f6;
+  --color-ink-soft: #c9d0d9;
+  /* 同浅色主题：两档灰都提到「最亮的悬停底色 #2e343c 上仍 ≥4.5:1」，
+     原来的 faint #737b88 在悬停行上只有 3.9，读起来像禁用态。 */
+  --color-muted: #adb5c0;
+  --color-faint: #9aa2ae;
+  /* 品牌蓝降一档饱和：上一版 #3b82f6 在近黑底上会「发光」，
+     图标、选中态、按钮全是同一种高饱和蓝，整页偏吵。文字用的 brand 更淡，
+     实心按钮单独走 brand-solid（保留饱和，按钮要压得住底）。 */
+  --color-brand: #4d8df6;
+  --color-brand-strong: #8dbcff;
+  --color-brand-soft: #16273f;
+  --color-brand-soft-strong: #1d3354;
+  --color-brand-line: #274165;
+  --color-brand-solid: #2f63c4;
+  --color-brand-solid-hover: #2a5cb8;
+  --color-brand-border: #3f6196;
+  --color-tooltip: #2b303a;
+  --color-tooltip-ink: #eef1f6;
+  /* 语义色统一压到同一明度带（都偏「柔和信号色」，不是霓虹）：
+     绿 #4ade80 → #4ecf9a、黄 #fbbf24 → #e2b04a、红 #f87171 → #f07b7b、
+     紫 #c4b5fd → #b8a4f5。五个颜色同时出现在一个界面时才不会打架。 */
+  --color-ok: #4ecf9a;
+  --color-ok-soft: #10261d;
+  --color-ok-line: #1f5340;
+  --color-warn: #e2b04a;
+  --color-warn-soft: #2a2312;
+  --color-warn-line: #55451d;
+  --color-danger: #f07b7b;
+  --color-danger-soft: #2b1719;
+  --color-danger-line: #5a2b2e;
+  --color-accent: #b8a4f5;
+  --color-accent-soft: #221d33;
+  --color-accent-line: #3b3364;
+  /* 深色下「加深」等于提亮：静息提到 #66707f（对面板 #1b1e24 约 3.1:1），
+     悬停反而落回 #2e343c —— 和浅色一样是「深 → 柔」，只是亮暗翻了个面。 */
+  --color-send-face: #66707f;
+  --color-send-ink: #f3f6fa;
+  --color-send-face-hover: #2e343c;
+  --color-send-ink-hover: #9aa2ae;
+  --color-send-face-active: #7b8593;
+  /* 深色下纸面抬到 #1f232a，桌面压到 #12151a：亮暗关系与浅色一致 */
+  --color-doc-page: #1f232a;
+  --color-doc-backdrop: #12151a;
+  --color-ai: #8dbcff;
+  --color-ai-soft: #16273f;
+  --color-ai-line: #274165;
+  --color-tool: #b8a4f5;
+  --color-tool-soft: #221d33;
+  --color-tool-line: #3b3364;
+
+  /* 面板阴影加深：近黑外壳上要靠投影才能读出层级，纯描边会显得「贴纸」 */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(0, 0, 0, 0.85);
+  --shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.8);
+}
+
+/* ------------------------------------------------------------------
+   动效常量（frontend-studio 铁律：反馈 ≤200ms、入场/布局 ≤300ms）。
+   组件里不要写裸时长，统一走这两个变量：系统开了「减少动态效果」时，
+   末尾的 media 块把它们压到 0，全站动效一次关闭，不用逐个组件改。
+   ------------------------------------------------------------------ */
+:root {
+  --dur-feedback: 160ms; /* 反馈类：hover/按下/描边变化 */
+  --dur-enter: 220ms; /* 入场类：气泡淡入、卡片浮现、面板开合 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  /* 基准字号 90%：整页等比缩到「浏览器 90% 缩放」的观感——信息密度更低、留白更多。
+     Tailwind 的间距/圆角/控件尺寸全部走 rem，改这一处即可整体缩放；
+     设置页「外观 · 界面缩放」可在 85%~110% 之间调（写到 --ui-scale，默认 90%）。
+     注意：字号**不再**跟着它走（字号走 --font-scale，见 @theme 里 --text-* 的说明），
+     所以调这一处只会动间距与控件，字还是那么大。 */
+  /* html 也铺上底色：拖到顶/底的越界回弹区域不会再漏白 */
+  html {
+    /* 表单控件的默认配色跟着这里走。浅色主题必须显式声明 light：
+       不写的话浏览器按**系统**偏好画，用户系统是深色时，白底页面里的原生
+       复选框/滚动条会变成近黑色（「产物中心里那个黑方块」就是这么来的）。
+       深色主题在下面 html.dark 里覆盖成 dark。 */
+    color-scheme: light;
+    font-size: var(--ui-scale, 90%);
+    /* 字号缩放：只由「外观 · 字体大小」写（0.85~1.25，默认 1）。
+       所有 --text-* 令牌与 text-[Npx] 工具类都乘它，改一个变量整页文字一起变。 */
+    --font-scale: 1;
+    /* 基准字重：设置页「外观 · 字体粗细」写这个变量（300~600，默认 400）。
+       下面 body 与字重语义类都读它，调一处整体平移。 */
+    --ui-font-weight: 400;
+    background: var(--color-canvas);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: var(--ui-font-weight);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* 字重语义类跟着基准走的规则写在文件末尾（必须压过 Tailwind 的 utilities，
+     放这一层会被 utilities 覆盖掉，原因见那一节的注释）。 */
+
+  ::selection {
+    background: var(--color-brand-line);
+  }
+
+  /* 细滚动条，演示时不抢戏（颜色走令牌，暗色下自动变深） */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+/* 空状态首屏：垂直节奏随视口高度伸缩。
+   矮窗口（1000×560 这类）压缩间距保证首屏不裁切，高窗口保持舒展留白。 */
+.empty-hero {
+  padding-top: clamp(0.5rem, 3.6vh, 2.5rem);
+  padding-bottom: clamp(0.5rem, 2vh, 1.5rem);
+}
+.empty-hero__icon {
+  width: clamp(2.25rem, 8vh, 3rem);
+  height: clamp(2.25rem, 8vh, 3rem);
+}
+.empty-hero__title {
+  margin-top: clamp(0.5rem, 2vh, 1rem);
+  font-size: clamp(1.125rem, 3vh, 1.375rem);
+  line-height: 1.35;
+}
+.empty-hero__lead {
+  margin-top: clamp(0.25rem, 1vh, 0.5rem);
+}
+.empty-hero__block {
+  margin-top: clamp(0.75rem, 3vh, 1.5rem);
+}
+.empty-hero__foot {
+  margin-top: clamp(0.5rem, 3vh, 2rem);
+}
+/* 矮窗口（<700px）里底部说明与输入区提示重复，直接让位给主内容 */
+@media (max-height: 700px) {
+  .empty-hero__foot {
+    display: none;
+  }
+  /* 图标与标题并排，省下一整行高度，首屏才能完整落在可视区内 */
+  .empty-hero__head {
+    flex-direction: row;
+    gap: 0.6rem;
+  }
+  .empty-hero__title {
+    margin-top: 0;
+  }
+  .empty-hero__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+  }
+}
+
+/* 打字光标 */
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 1px;
+  translate: 0 2px;
+  background: var(--color-brand);
+  animation: caret-blink 1s step-end infinite;
+}
+
+/* 流式气泡里最后一段的轻微淡入 */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise-in {
+  /* fill-mode 必须是 backwards：`both` 会在动画结束后继续保留终态帧，
+     而终态里的 `transform: none` 到计算值时是 identity matrix——元素于是永远带着
+     一个 transform，也就永远是一个 stacking context。它内部的下拉面板 z-30 就被
+     困在这张卡里，溢出到卡片外的部分会被后面 DOM 顺序的列表盖住（产物中心「会话」
+     面板只露出前两行，就是这个）。backwards 只在开始前垫首帧，结束后不残留。 */
+  animation: rise-in var(--dur-enter) var(--ease-out) backwards;
+}
+
+/* hover 气泡淡入：只动透明度，不碰 transform —— 气泡靠 translate 定位，
+   一旦在关键帧里写 transform，贴边翻转或居中偏移就会被冲掉 */
+@keyframes tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.tip-in {
+  animation: tip-in var(--dur-feedback) var(--ease-out) both;
+}
+
+/* 交付区落桌（产物卡片）：
+   跑完那一刻「过程行收束 → 产物浮上来」要有先后，不能同帧硬插入。
+   上浮 8px 比流式气泡（2px）明显一档，因为它是一整块新内容，不是一行字。
+   延迟 90ms 是刻意的：先让过程行的字淡下去，产物再落位，视觉上才是一件事。 */
+@keyframes deliver-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.deliver-in {
+  /* backwards：延迟期间先垫首帧（透明），不然那 90ms 里会闪一下全亮 */
+  animation: deliver-in var(--dur-enter) var(--ease-out) 90ms backwards;
+}
+
+/* 换页：新页面淡入 + 上浮 6px。
+   路由切换是整棵子树卸载重建，原本一帧硬切——顶栏、内容区、滚动条同时重置，
+   看着像「咯噔」跳一下。这里只补入场、不做退场：两页要交叉淡化就得分屏共存，
+   顶栏会叠出两层描边，不如让旧页干脆消失。
+   body 底色与页面同为 --color-canvas，动画期间透明度降下来也不会闪白。 */
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.route-enter {
+  /* 200ms：比 --dur-enter（220ms）仍快一档，但比 150ms 看得出来一点。
+     换页是用户自己按的动作，太慢会觉得拖，太快（150ms 以下）就像没做。 */
+  animation: route-in 200ms var(--ease-out) backwards;
+}
+
+/* 进程中的浅色扫光（子智能体运行态） */
+@keyframes shimmer {
+  0% {
+    background-position: -160px 0;
+  }
+  100% {
+    background-position: 160px 0;
+  }
+}
+.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-surface-soft) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 320px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* 预览 iframe 内的 DOCX HTML：给一点默认排版，避免裸 HTML 太毛糙 */
+.preview-frame {
+  color-scheme: light;
+}
+
+/* 可悬浮的卡片（产物卡）：鼠标经过时明显浮起 + 品牌色描边 + 一圈柔光。
+   写成类而不是 Tailwind 任意值，多个阴影叠加时更可控，也避免逗号被解析错。 */
+.card-lift {
+  transition:
+    box-shadow var(--dur-feedback) var(--ease-out),
+    border-color var(--dur-feedback) var(--ease-out),
+    background-color var(--dur-feedback) var(--ease-out),
+    transform var(--dur-feedback) var(--ease-out);
+}
+.card-lift:hover {
+  border-color: var(--color-brand-border);
+  background-color: var(--color-surface);
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px -8px rgba(16, 24, 40, 0.34),
+    0 0 0 1px var(--color-brand-border),
+    0 0 0 5px var(--color-brand-soft);
+}
+
+/* 产物行（对话交付区 / 右栏仓库）：
+   鼠标经过时左侧长出一道 2px 的品牌色竖条，类型图块轻轻抬起，右侧的「大小/格式」
+   原地让位给操作条（预览 / 添加到对话框 / 下载）。
+
+   写成类而不是堆工具类，是因为三件事都不好用 Tailwind 表达：
+   ::before 的竖条、color-mix 混出的浅品牌底、还有「hover 与键盘 focus 同款」的状态。
+   focus 只用 :focus-visible：鼠标点完焦点还留在按钮上，:focus-within 会让竖条
+   和 hover 底色一直挂着不消失——「点一下再移开鼠标，效果还在」就是这么来的。
+   行高、文件名宽度都不参与变化——操作条是绝对定位在固定宽度的槽位里，
+   所以来回扫过一行不会看到文字左右挪动。 */
+.artifact-row {
+  transition:
+    background-color var(--dur-feedback) var(--ease-out),
+    border-color var(--dur-feedback) var(--ease-out),
+    box-shadow var(--dur-feedback) var(--ease-out);
+}
+.artifact-row::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 0;
+  border-radius: 999px;
+  background: var(--color-brand);
+  transform: translateY(-50%);
+  transition: height var(--dur-feedback) var(--ease-out);
+  pointer-events: none;
+}
+.artifact-row:hover::before,
+.artifact-row:has(:focus-visible)::before {
+  height: 56%;
+}
+/* 交付区的行是带描边的「小卡片」：hover 时换成极浅的品牌底 + 一层贴地的阴影 */
+.artifact-row--card:hover,
+.artifact-row--card:has(:focus-visible) {
+  border-color: var(--color-brand-line);
+  background-color: color-mix(in srgb, var(--color-brand-soft) 62%, var(--color-surface));
+  box-shadow: 0 12px 26px -20px rgba(16, 24, 40, 0.55);
+}
+.artifact-row__tile {
+  transition:
+    transform var(--dur-feedback) var(--ease-out),
+    box-shadow var(--dur-feedback) var(--ease-out);
+}
+.artifact-row:hover .artifact-row__tile,
+.artifact-row:has(:focus-visible) .artifact-row__tile {
+  transform: translateY(-0.5px) scale(1.05);
+  box-shadow: var(--shadow-card);
+}
+
+/* 兜底：指针点出来的焦点不画描边，只有键盘走到（:focus-visible）才画。
+   预览弹窗关掉后按钮上还挂着一圈框、右侧悬浮条也不退——根因是那次
+   「关窗时把焦点还给触发按钮」的 focus() 已经脱离用户手势，浏览器一律判成
+   :focus-visible。组件里已经按键盘/指针分开处理，这里再兜一层：
+   以后别的浮层再引入「关闭后还原焦点」，也不会把这道残影带回来。 */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[role='button']:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 输入框外缘光晕：从边框往外「散射」的柔光，不是套一圈硬描边。
+   上一版是 `0 0 0 5px` 的实心扩散环 —— 模糊半径为 0，等于在输入框外面又画了个蓝框，
+   停下来看很突兀。现在四层都是「大模糊 + 负扩散」：贴着边框只留一道发丝般的亮边，
+   越往外越淡、没有明确边界，像灯打在墙上散开的光。
+   hover 亮一档、聚焦再亮一档，只过渡阴影与描边，不会有「框一下跳出来」的观感。 */
+.composer-glow {
+  transition:
+    box-shadow var(--dur-enter) var(--ease-out),
+    border-color var(--dur-enter) var(--ease-out);
+}
+.composer-glow:hover {
+  border-color: color-mix(in srgb, var(--color-brand) 26%, var(--color-line-strong));
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 0.5px color-mix(in srgb, var(--color-brand) 8%, transparent),
+    0 0 16px -3px color-mix(in srgb, var(--color-brand) 14%, transparent),
+    0 0 42px -12px color-mix(in srgb, var(--color-brand) 22%, transparent);
+}
+.composer-glow:focus-within {
+  border-color: color-mix(in srgb, var(--color-brand) 44%, var(--color-line-strong));
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 0.5px color-mix(in srgb, var(--color-brand) 14%, transparent),
+    0 0 20px -4px color-mix(in srgb, var(--color-brand) 22%, transparent),
+    0 0 52px -12px color-mix(in srgb, var(--color-brand) 30%, transparent),
+    0 0 110px -34px color-mix(in srgb, var(--color-brand) 42%, transparent);
+}
+
+/* 拖拽入框 / 输入框需要提醒时的同款散射：别再用 ring-4 那种硬环 */
+.composer-lit {
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 0.5px color-mix(in srgb, var(--color-brand) 14%, transparent),
+    0 0 20px -4px color-mix(in srgb, var(--color-brand) 22%, transparent),
+    0 0 52px -14px color-mix(in srgb, var(--color-brand) 26%, transparent);
+}
+.composer-lit-warn {
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 0.5px color-mix(in srgb, var(--color-warn) 16%, transparent),
+    0 0 18px -4px color-mix(in srgb, var(--color-warn) 20%, transparent),
+    0 0 48px -14px color-mix(in srgb, var(--color-warn) 24%, transparent);
+}
+
+/* ------------------------------------------------------------------
+   产物预览的阅读版式（mammoth 的 docx HTML / Markdown / 纯文本 / 表格共用）。
+
+   —— 一条硬规则：这一段里的字号、行高、间距一律写 px，不写 rem。
+   界面整体跟着「外观 · 基准字号」（--ui-scale，默认 90%）缩放，但**阅读区不该跟着缩**。
+   实测：14rem 在默认 90% 下就是 12.6px——既跌破中文可读下限，又是分数像素
+   （Windows 125%/150% 缩放下字形必虚）。这里的数字就是用户看到的像素值。
+
+   刻度（改文档排版只动这一段）：
+   - 字号五档：正文 15 / 三级标题 16 / 二级标题 17 / 一级标题 19 / 文档标题 22，注释 12。
+     正文比界面正文（13）大两档——这是要读的正文，不是界面控件标签。
+     **非正文一律居中**：文档标题、副标题、各级小节标题都居中，靠字号与编号区分层级；
+     正文段落走两端对齐（详见下面 .doc-title 那段）。公文版式例外，标题顶格左起。
+   - 行高一律整数 px：正文 27（1.8，中英混排的舒适值），标题 24~30（成组更紧）。
+   - 垂直节奏六档：6（列表项）/ 14（段落、列表底）/ 8+20（三级标题 下/上）/
+     10+24（二级标题 下/上）/ 26（一级标题 上）/ 28（分隔线）。同级元素间距一致，不随字号漂移。
+   - 颜色只用语义令牌：标题 ink、正文 ink-soft、注释 muted / faint、强调 brand-strong。
+   - 容器留白不在内部类里：由 .doc-paper 负责，两者相加才是纸上的最终留白。
+   ------------------------------------------------------------------ */
+
+/* 预览里的那张「纸」：宽不超过一行 40~45 个汉字的阅读宽度，居中落在深一档的底子上。
+   表格另给一个更宽的容器（并允许横向滚动），否则宽表会被压成竖条。 */
+.doc-paper {
+  width: 100%;
+  max-width: var(--doc-page-width, 720px);
+  margin-inline: auto;
+  padding: 22px 18px 26px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-doc-page);
+  box-shadow: var(--shadow-card);
+}
+@media (min-width: 640px) {
+  .doc-paper {
+    padding: 36px 40px 44px;
+  }
+}
+.doc-paper--table {
+  max-width: var(--doc-table-width, 880px);
+  overflow-x: auto;
+}
+
+/* 全窗口阅读：纸不再只是「一段内容」，而是一整页——
+   高度撑满可用区域、去掉圆角顶在窗口边上，左右留白比半窗口更宽（页面感而不是卡片感）。
+   文字宽度**不跟着放大**：一行仍按 40 来个汉字排，字反而更好认；
+   真正需要更多横向空间的是表格，所以表格在全窗口下换满宽。 */
+.doc-paper--full {
+  min-height: 100%;
+  padding: 28px 22px 36px;
+  border-radius: 0;
+}
+@media (min-width: 640px) {
+  .doc-paper--full {
+    padding: 48px 56px 64px;
+  }
+}
+.doc-paper--full.doc-paper--table {
+  max-width: 100%;
+}
+
+.prose-docx {
+  font-size: 15px; /* 中文正文可读下限起步 */
+  line-height: 27px;
+  color: var(--color-ink-soft);
+  font-variant-numeric: tabular-nums;
+  /* 中文断行：长英文串/链接不撑破容器，标点不出现在行首 */
+  overflow-wrap: break-word;
+  line-break: strict;
+  text-wrap: pretty;
+}
+
+/* 首尾元素不吃外边距：否则「纸」的上下留白会比左右多出一截 */
+.prose-docx > :first-child {
+  margin-top: 0;
+}
+.prose-docx > :last-child {
+  margin-bottom: 0;
+}
+
+.prose-docx h1,
+.prose-docx h2,
+.prose-docx h3,
+.prose-docx h4,
+.prose-docx h5,
+.prose-docx h6 {
+  color: var(--color-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+/* 文档大标题：全文唯一居中、唯一「最大」的一行。
+   mammoth 把 Word 的 Title 样式映射成 h1.doc-title，Heading N 是普通的 h1/h2/h3，
+   两者必须分开写——它们都会落到 `.prose-docx h1` 这个标签上，混在一起写，
+   正文里的每一小节（摘要 / 本周进展 / 关键数据）都会变成居中大标题。 */
+.prose-docx h1.doc-title {
+  margin: 0 0 16px;
+  /* 正文 15px，大标题 22px 拉开两档；小节标题最大 19px，永远小一档。
+     别贪大：一行 640px 的版心按 22px 能装 29 个汉字，再大一档，
+     带括注的长标题（「实验二　…（2026 年第 47 周，工作周报）」）就会在括号里断行。 */
+  text-align: center;
+  font-size: 22px;
+  line-height: 30px;
+  letter-spacing: -0.02em;
+}
+/* 小节标题一律贴左、从版心左缘起行，用 !important 顶住文件里带过来的对齐属性。
+   「非正文一律居中」指的是**文首标题块**：大标题、副标题、以及「实验名称 / 姓名
+   学号 专业 日期」这类信息行。小节标题不在此列——读者靠它定位「这一节从哪开始」，
+   居中等于每节都要把视线拉回页面中间重找起行位置（用户给的样张就是这个排法）。
+   用 !important 顶住老产物：改版前生成的 docx，Heading 段落存的是 w:jc="center"，
+   mammoth 会把它转成 inline style 一起带进预览。预览是「按我们的读法呈现」，
+   不是照抄文件里的排版。
+   公文同理（GB/T 9704 顶格），所以它不需要例外分支。 */
+.prose-docx h1:not(.doc-title),
+.prose-docx h2,
+.prose-docx h3,
+.prose-docx h4,
+.prose-docx h5,
+.prose-docx h6 {
+  text-align: left !important;
+}
+.prose-docx h1 {
+  margin: 26px 0 10px;
+  font-size: 19px;
+  line-height: 27px;
+}
+.prose-docx h2 {
+  margin: 24px 0 10px;
+  font-size: 17px;
+  line-height: 25px;
+}
+.prose-docx h3 {
+  margin: 20px 0 8px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.prose-docx h4,
+.prose-docx h5,
+.prose-docx h6 {
+  margin: 18px 0 6px;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+/* 层级缩进：一级顶格，往下每级缩 1 字符。后端 blocks_to_html 给左对齐版式的
+   标题打 `doc-hN`，和 Word 里的 `w:leftChars` 是同一套。
+   1. 与 1.1 顶在同一条竖线上，读者只能靠多读一个编号判断谁是谁的下一层，扫标题
+   时视线一直在重新对齐；缩进之后左边缘本身就分出层级。
+   缩 2 字符会过头——正文段首本来就空两格，标题再缩两格会和正文段首撞在同一条
+   线上，而正文续行在最左边，读起来像正文比标题还宽。一格刚好「看得出是下一层」。
+   用 em 而不是 px：Word 里存的是「1 字符」（w:leftChars），即一个当前字号的字宽，
+   标题字号一改缩进跟着缩放；写死 px 的话二号字的 1 字符和五号字的会一样宽。 */
+.prose-docx .doc-h1 {
+  margin-left: 0;
+}
+.prose-docx .doc-h2 {
+  margin-left: 1em;
+}
+.prose-docx .doc-h3 {
+  margin-left: 2em;
+}
+.prose-docx .doc-h4 {
+  margin-left: 3em;
+}
+
+/* 正文段落默认首行缩进两格（中文的「空两格」），这是默认值，不是可选项。
+   mammoth 转出来的正文是裸 <p>，身上没有 doc-para 类，所以规则必须落在标签上——
+   以前只写了 `.p.doc-para`，预览里的正文就全是顶格的。
+   对齐也在这里定：正文两端对齐，行行撑满版心、右缘齐边；各级标题走居中的那条
+   规则（见上面 h1/h2 那组），不会被这条一起拉成满行。
+   下面一组是白名单：副标题、机器信息、图注、表格与列表里的段落，它们各自已有
+   缩进体系，再空两格会整体右移，看着像没对齐。 */
+.prose-docx p {
+  margin: 0 0 14px;
+  text-align: justify;
+  text-indent: 2em;
+}
+.prose-docx p.doc-lead,
+.prose-docx p.doc-meta,
+.prose-docx p.doc-caption,
+.prose-docx li p,
+.prose-docx td p,
+.prose-docx th p,
+.prose-docx figcaption {
+  text-indent: 0;
+}
+.prose-docx strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.prose-docx em {
+  font-style: italic;
+}
+.prose-docx a {
+  color: var(--color-brand-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.prose-docx a:hover {
+  color: var(--color-brand);
+}
+
+.prose-docx ul,
+.prose-docx ol {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+/* Tailwind 的 preflight 把 ul/ol 的 list-style 清成 none：
+   正文里的列表（含 docx 的「来源引用」）必须显式补回来，否则一条圆点都没有。 */
+.prose-docx ul {
+  list-style: disc outside;
+}
+.prose-docx ol {
+  list-style: decimal outside;
+}
+.prose-docx li {
+  margin: 0 0 6px;
+}
+.prose-docx li::marker {
+  color: var(--color-faint);
+}
+/* 二级列表贴紧父项，别在层级之间留出一个整段的空 */
+.prose-docx li > ul,
+.prose-docx li > ol {
+  margin: 6px 0 4px;
+}
+
+.prose-docx blockquote {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--color-brand-line);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+}
+.prose-docx blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-docx hr {
+  margin: 28px 0;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+/* 行内代码与代码块：此前完全没有样式，md 里的 `GET /x` 只能靠系统等宽字体硬撑 */
+.prose-docx code {
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-sunken);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  /* 行内代码不许在词中间断开：`rounded-panel` 默认会在连字符后折行，
+     变成上一行结尾 `rounded-`、下一行开头 `panel`，像被打错了一样。 */
+  white-space: nowrap;
+}
+.prose-docx pre code {
+  white-space: inherit;
+}
+.prose-docx pre {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-soft);
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 21px;
+}
+.prose-docx pre code {
+  padding: 0;
+  background: none;
+}
+
+.prose-docx table {
+  margin: 0 0 16px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 20px;
+}
+.prose-docx th,
+.prose-docx td {
+  padding: 8px 12px;
+  border: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: top;
+}
+.prose-docx thead th {
+  background: var(--color-surface-sunken);
+  color: var(--color-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.prose-docx tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--color-surface-soft) 70%, transparent);
+}
+
+.prose-docx img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-sunken);
+}
+
+/* 图文对照（第六十七轮）：图在上、注在下、注小一号。
+   图注以前是普通段落，和正文同字号同色，读者会把它当成正文第一句；
+   现在居中偏左对齐、13px、muted，和上一段的间距比段间距大、和图的间距小，
+   一眼能看出「这句话属于上面那张图」。 */
+.prose-docx figure {
+  margin: 4px 0 22px;
+}
+.prose-docx figure img {
+  width: auto;
+  max-width: 100%;
+  /* 竖拍照片按整宽铺开会占掉两屏：限高之后居中显示，正文还能接着读 */
+  max-height: 560px;
+  margin-inline: auto;
+  border: 0;
+  border-radius: var(--radius-panel, 12px);
+  box-shadow: var(--shadow-card);
+}
+.prose-docx figcaption,
+/* 文档标题下的一行说明（副标题）：比正文大一档、加粗、黑字，
+   贴住标题、与下面的内容拉开——它是「这篇讲什么」的一句话，不是正文第一段。
+   和 Word 里 Subtitle 段落的排法一一对应（四号加粗居中）。 */
+.prose-docx .doc-lead {
+  margin: -6px 0 14px;
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  /* 副标题跟着大标题居中：标题居中、下面挂一行左对齐的小字，看着像没对齐 */
+  text-align: center;
+}
+
+/* 文首信息行（实验名称 / 姓名 学号 专业 日期）：和副标题同一块，居中、不缩进、
+   字号跟正文一样，行距收一点——它是「这份材料是谁的」的落款，不是正文第一段。 */
+.prose-docx .doc-byline {
+  margin: 0 0 4px;
+  color: var(--color-ink);
+  font-size: 15px;
+  line-height: 23px;
+  text-align: center;
+  text-indent: 0;
+  /* 字段多到要折行时，让两行长度接近：只断出「期：2026-11-11」这一小截太难看了 */
+  text-wrap: balance;
+}
+.prose-docx .doc-byline:last-of-type {
+  margin-bottom: 18px;
+}
+
+/* 后端 blocks_to_html 会给正文段落标 doc-para（标签级已经默认缩进，这个类只是
+   让「这一段是正文」在 HTML 里显式可读）；紧凑版式（compact）反过来标 doc-flat，
+   把缩进清掉——资料、说明书这类以信息密度为先的文档顶格排更省地方。
+   缩进用 em：字号一改，两格自动跟着变。 */
+.prose-docx p.doc-para {
+  text-indent: 2em;
+}
+.prose-docx p.doc-flat {
+  text-indent: 0;
+}
+
+/* 后端把「这一篇正文缩进几字符」写在包裹层的 --doc-indent 上（0 / 1 / 2）。
+   接上它，「首行缩进」面板里选的档位才算真的生效——以前这个变量没人读，
+   用户在面板上把缩进改成 0，预览里照样空两格，只能下载下来才看得出区别。
+   只作用于包裹层的直接子段落：表格单元格里的段落不缩（和上面 td p 那条一致）。 */
+.prose-docx .doc-body > p:not(.doc-lead):not(.doc-byline) {
+  text-indent: var(--doc-indent, 2em);
+}
+
+/* 正文对齐：默认是两端对齐（`.prose-docx p` 那条基础规则），只有用户显式改成
+   左 / 中 / 右时，后端才会给包裹层加 doc-align-*，这里负责覆盖回去。
+   **只挑正文段落**——标题自己带 left，表格/代码/引用各自钉住左对齐，
+   副标题（doc-lead）与机器信息（doc-meta）各自有排法，和 Word 里那套段格式一一对应。 */
+.prose-docx .doc-align-center > p:not(.doc-lead):not(.doc-meta):not(.doc-byline) {
+  text-align: center;
+}
+.prose-docx .doc-align-left > p:not(.doc-lead):not(.doc-byline) {
+  text-align: left;
+}
+.prose-docx .doc-align-right > p:not(.doc-lead):not(.doc-byline) {
+  text-align: right;
+}
+
+/* 字型（WPS 工具栏上的 B / I / U）：同样只落到正文段落上，标题不吃。 */
+.prose-docx .doc-bold > p {
+  font-weight: 600;
+}
+.prose-docx .doc-italic > p {
+  font-style: italic;
+}
+.prose-docx .doc-underline > p {
+  text-decoration: underline;
+}
+
+/* 紧凑版式：后端在 preset=compact 时给整篇包一层 `.doc-compact`。
+   排版规则和默认版式**完全一样**——标题逐级内缩、正文首行缩进两格——读者认的
+   是同一套层级，换个版式照样一眼找到段落从哪起。密度靠字号（15→14）、行高
+   （27→24）、段距（14→10）挤出来，不靠抹平缩进与层级：以前那版把缩进全清掉，
+   一页正文连成一片，标题也只剩字号差异，看着像「没排过版」。
+   这里一律写 px，理由同上：阅读区不跟界面缩放走。 */
+.prose-docx .doc-compact {
+  font-size: 14px;
+  line-height: 24px;
+}
+.prose-docx .doc-compact > :first-child {
+  margin-top: 0;
+}
+.prose-docx .doc-compact > :last-child {
+  margin-bottom: 0;
+}
+.prose-docx .doc-compact h1.doc-title {
+  margin-bottom: 12px;
+  font-size: 20px;
+  line-height: 28px;
+}
+.prose-docx .doc-compact h2 {
+  margin: 20px 0 8px;
+  font-size: 17px;
+  line-height: 25px;
+}
+.prose-docx .doc-compact h3 {
+  margin: 16px 0 6px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.prose-docx .doc-compact h4,
+.prose-docx .doc-compact h5,
+.prose-docx .doc-compact h6 {
+  margin: 14px 0 4px;
+  font-size: 14px;
+  line-height: 22px;
+}
+.prose-docx .doc-compact p {
+  margin-bottom: 10px;
+}
+.prose-docx .doc-compact .doc-lead {
+  margin: -4px 0 12px;
+  /* 紧凑版正文 14px，副标题再降一档就比正文还小，层级就反了 */
+  font-size: 15px;
+  line-height: 22px;
+}
+.prose-docx .doc-compact .doc-byline {
+  margin-bottom: 3px;
+  font-size: 14px;
+  line-height: 21px;
+}
+.prose-docx .doc-compact table {
+  font-size: 13px;
+}
+
+.prose-docx .doc-caption {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: left;
+}
+
+/* 文本预览开头的机器信息（生成时间 / 模式 / 来源）：收成一块浅色注释，
+   保留信息但不与正文争视觉重量；虚线分隔换成一整块底色，边界更干净。 */
+.prose-docx .doc-meta {
+  margin: 0 0 20px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-doc-backdrop);
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 19px;
+}
+
+/* ------------------------------------------------------------------
+   尊重系统「减少动态效果」：全站动效一次性关掉，退化成瞬时切换。
+   光标闪烁、shimmer 扫光这类循环动画也必须停（前庭敏感用户会被持续闪动困扰），
+   所以这里不只压时长，还把循环次数归 1，并去掉卡片悬浮位移。
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-feedback: 1ms;
+    --dur-enter: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .caret {
+    animation: none;
+  }
+  .shimmer {
+    animation: none;
+  }
+  .card-lift:hover {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   桌面端独立窗口：标题栏让位（逻辑见 shared/lib/titlebar.ts）
+   --titlebar-h 默认取 CSS 的 env()：普通标签页里它是 0，网页态布局与之前一致；
+   装到本机（window-controls-overlay）后浏览器直接给出真实高度，外壳底色就能一直
+   铺到窗口最上沿，窗口按钮浮在这条底色上，不再有一条「另一套配色」的标题栏。
+
+   为什么默认值用 env() 而不是 0px：JS 只负责「量得更准」，不该是唯一来源。
+   一旦 JS 没跑到（旧 bundle、加壳浏览器量不到矩形），0px 会把内容顶到窗口按钮
+   底下——这正是「桌面端右上角按钮被 — □ ✕ 压住」那个 bug。
+   ------------------------------------------------------------------ */
+:root {
+  --titlebar-h: env(titlebar-area-height, 0px);
+}
+
+/* 兜底：个别 Chromium 版本在 overlay 模式下 env(titlebar-area-height) 会给 0，
+   但 — □ ✕ 照样画在最上面。宁可多留一点，也不能让按钮压住界面。
+   （全屏时显示模式变成 fullscreen，这条不再命中，不会凭空多出一条留白） */
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --titlebar-h: max(env(titlebar-area-height, 0px), 32px);
+  }
+}
+
+.titlebar-drag-band {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  height: var(--titlebar-h);
+  /* 原生标题栏没了，这条透明区负责「拖窗口」；高度为 0 时自然不挡任何点击 */
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+/* 面板版的「让位」：窗口按钮浮在右上角时，面板本身可以一直贴到窗口顶沿
+   （外壳已经给了 10px 内边距），把按钮那一条高度留给面板**内部**的留白。
+   这样标题栏下面不会再出现一条「面板之外的空隙」，视觉上面板是从窗口顶端长出来的；
+   而面板里的按钮、标题仍然落在按钮下沿之下，不会被 — □ ✕ 压住。
+   网页态 --titlebar-h 是 0，max() 兜住负数，等于没加。 */
+.window-inset-top {
+  padding-top: max(calc(var(--titlebar-h, 0px) - 0.625rem), 0px);
+}
+
+/* ------------------------------------------------------------------
+   字重语义类：跟着「外观 · 字体粗细」的基准走，而不是写死 500 / 600。
+
+   为什么放在文件最末尾、且**不写进任何 @layer**：
+   Tailwind 的 .font-medium 在 utilities 层里，层级晚于 base；写在 base 里会被它覆盖。
+   而未分层的规则优先于所有分层规则，所以放这里才能真正压住工具类。
+
+   基准 400 时：medium=500、semibold=600、bold=700 —— 与 Tailwind 原值完全一致，
+   不调字重的用户看到的界面一个像素都不变。用户把基准调到 300 或 600 时，
+   三种语义一起平移，标题与正文的相对层级仍然在。
+   ------------------------------------------------------------------ */
+.font-medium {
+  font-weight: calc(var(--ui-font-weight, 400) + 100);
+}
+.font-semibold {
+  font-weight: calc(var(--ui-font-weight, 400) + 200);
+}
+.font-bold {
+  font-weight: calc(var(--ui-font-weight, 400) + 300);
+}

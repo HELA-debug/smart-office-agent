@@ -1,0 +1,401 @@
+{
+  "$id": "contracts/events.v1.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "run.started"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "thread_id",
+              "mode",
+              "model",
+              "started_at"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "message.delta"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "message_id",
+              "delta",
+              "index"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "message.completed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "message_id",
+              "content"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "thinking.delta"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "message_id",
+              "delta",
+              "index"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "thinking.completed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "message_id",
+              "content"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "plan.updated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "todos"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "tool.started"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "tool"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "tool.finished"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "tool",
+              "ok",
+              "risk",
+              "summary",
+              "duration_ms",
+              "input",
+              "output"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "approval.required"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "approval_id",
+              "tool",
+              "risk",
+              "message",
+              "preview"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "artifact.ready"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "artifact_id",
+              "type",
+              "filename",
+              "size",
+              "download_url",
+              "preview_url"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "run.completed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "status",
+              "tokens",
+              "cost_cny",
+              "elapsed_ms",
+              "artifact_ids",
+              "approvals"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "run.failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "error"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "run.cancelled"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "reason"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "heartbeat"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "context.compacted"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "version",
+              "run_id",
+              "turns_total",
+              "kept_turns",
+              "dropped_turns",
+              "summary_chars"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "description": "POST /api/v1/threads/{thread_id}/runs/stream 的 SSE 帧与 data 契约。version 固定为 1；v1.1 仅追加 run.cancelled / tool.started / heartbeat，不修改 v1 已有事件语义。",
+  "properties": {
+    "data": {
+      "additionalProperties": true,
+      "properties": {
+        "run_id": {
+          "description": "本次运行 ID",
+          "minLength": 1,
+          "type": "string"
+        },
+        "trace_id": {
+          "description": "请求追踪 ID（可选）",
+          "type": "string"
+        },
+        "version": {
+          "const": 1,
+          "description": "事件协议版本，当前固定 1"
+        }
+      },
+      "required": [
+        "version",
+        "run_id"
+      ],
+      "type": "object"
+    },
+    "event": {
+      "enum": [
+        "run.started",
+        "message.delta",
+        "message.completed",
+        "thinking.delta",
+        "thinking.completed",
+        "plan.updated",
+        "tool.started",
+        "tool.finished",
+        "approval.required",
+        "artifact.ready",
+        "run.completed",
+        "run.failed",
+        "run.cancelled",
+        "heartbeat",
+        "context.compacted"
+      ]
+    },
+    "id": {
+      "description": "事件序号，与 run_events.seq 一致（从 1 递增）",
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "event",
+    "data"
+  ],
+  "title": "office-agent SSE frame v1.1（只追加）",
+  "type": "object",
+  "x-event-version": 1,
+  "x-terminal-events": [
+    "run.cancelled",
+    "run.completed",
+    "run.failed"
+  ]
+}

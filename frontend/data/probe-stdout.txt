@@ -1,0 +1,19 @@
+[   0.6s] 打开 http://127.0.0.1:5173
+[   3.6s] 新建会话
+[   3.7s]   已点击新建会话
+[   4.9s] 上传素材：C:\Users\16650\WorkBuddy\Worktrees\office-agent-mvp\master-d1f26b0f\data\samples\meeting_notes.docx
+[   7.6s]   上传完成
+[   7.6s] 输入任务：把这份会议记录整理成一份 600 字左右的周报，输出成 Word 文档
+[   8.3s] 点击发送
+[  10.3s]   ▶ 开始运行（出现停止按钮）
+[  10.3s]   文本长度 452
+[  16.4s]   文本长度 412
+[  22.4s]   ⏸ 暂停等待审批
+[  22.4s]   ▶ 出现审批按钮：批准并继续 / 拒绝
+[  22.5s]   ▶ 已点击「批准并继续」
+[  22.5s]   文本长度 591
+[  26.5s] ✅ 任务完成（出现「运行完成」）产物=1
+[  26.5s]    最终文本长度 741
+[  26.5s]    结尾：CX 运行完成 · 产物 1 个 · 共消耗 33,162 tokens · ¥0.0100 deepseek-flash 查看审计记录 按需确认 deepseek-flash Enter 发送 · Shift + Enter 换行 | 真实模型：素材会发给模型解析，产物只写入本地目录 Office Agent MVP
+[  26.6s] 采样结束：思考=true 工具=false 审批=true
+[  27.1s] done

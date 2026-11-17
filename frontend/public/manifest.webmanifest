@@ -1,0 +1,55 @@
+{
+  "name": "Office Agent · 工作台",
+  "short_name": "Office Agent",
+  "description": "把材料整理成可交付的办公文档：读素材、写文档、产出可直接下载的文件。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#101317",
+  "theme_color": "#101317",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "新建会话",
+      "short_name": "新建",
+      "url": "/?new=1",
+      "description": "直接开一个空白会话"
+    },
+    {
+      "name": "产物中心",
+      "short_name": "产物",
+      "url": "/artifacts",
+      "description": "看已经生成的文件"
+    }
+  ]
+}

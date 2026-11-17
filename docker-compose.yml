@@ -1,0 +1,75 @@
+# office-agent-mvp 单机编排：web(8080) + api(8000)
+# 启动：docker compose up --build -d
+# 访问：http://127.0.0.1:8080 （api 直连 http://127.0.0.1:8000/api/v1/health）
+# 默认 mock 模式（ENGINE=mock），无 Key、断网可演示；
+# 真实模式：ENGINE=real + DEEPSEEK_API_KEY（或 QWEN_API_KEY / GLM_API_KEY）写入 .env 后
+#           docker compose up -d --build，见 README「模型配置」。
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: office-agent-mvp-api:latest
+    container_name: office-agent-api
+    environment:
+      APP_ENV: "${APP_ENV:-prod}"
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      LOG_FORMAT: "${LOG_FORMAT:-json}"
+      ENGINE: "${ENGINE:-mock}"
+      MOCK_MODE: "${MOCK_MODE:-true}"
+      MODEL_PROVIDER: "${MODEL_PROVIDER:-deepseek}"
+      MODEL_NAME: "${MODEL_NAME:-deepseek-chat}"
+      MODEL_FALLBACK_CHAIN: "${MODEL_FALLBACK_CHAIN:-deepseek,qwen,glm,mock}"
+      MODEL_TIMEOUT_SECONDS: "${MODEL_TIMEOUT_SECONDS:-60}"
+      MODEL_MAX_STEPS: "${MODEL_MAX_STEPS:-8}"
+      MOCK_MODEL_SPEED: "${MOCK_MODEL_SPEED:-0.05}"
+      FEATURE_FLAGS: "${FEATURE_FLAGS:-}"
+      # 供应商 Key 只从环境注入，不落镜像/仓库
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      QWEN_API_KEY: "${QWEN_API_KEY:-}"
+      DASHSCOPE_API_KEY: "${DASHSCOPE_API_KEY:-}"
+      GLM_API_KEY: "${GLM_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_BASE_URL: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+      DATABASE_URL: "sqlite:////app/data/app.db"
+      UPLOAD_DIR: "/app/data/uploads"
+      ARTIFACT_DIR: "/app/data/artifacts"
+      APPROVAL_RULES: "${APPROVAL_RULES:-doc.generate_report,file.delete}"
+      APPROVAL_TIMEOUT_SECONDS: "${APPROVAL_TIMEOUT_SECONDS:-180}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-http://127.0.0.1:8080,http://localhost:8080}"
+      MAX_UPLOAD_MB: "${MAX_UPLOAD_MB:-20}"
+      # 单用户兜底鉴权（可选）：配置后业务接口需带 X-API-Token 请求头。
+      # 留空 = 关闭鉴权，仅监听回环，请勿直接暴露公网。
+      API_TOKEN: "${API_TOKEN:-}"
+    volumes:
+      - app-data:/app/data
+    ports:
+      # 只绑回环地址：容器内 8000 不向局域网/公网开放，外部访问一律走 web(8080)
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        VITE_API_BASE: "/api"
+    image: office-agent-mvp-web:latest
+    container_name: office-agent-web
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      # 与后端 MAX_UPLOAD_MB 用同一个值，避免「后端允许 100MB、nginx 卡 20MB」的 413 漂移
+      NGINX_CLIENT_MAX_BODY_SIZE: "${MAX_UPLOAD_MB:-20}m"
+    ports:
+      # 与 api 一致：默认只对本机开放。需要局域网/公网访问时，
+      # 请先设置 API_TOKEN 并自行在前置网关加 HTTPS 与认证。
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+
+volumes:
+  app-data:

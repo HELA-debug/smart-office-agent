@@ -1,0 +1,114 @@
+{"text": "你好", "stance": "chat", "commitment": "none", "note": "纯寒暄，确定性短路"}
+{"text": "早", "stance": "chat", "commitment": "none", "note": "纯寒暄"}
+{"text": "谢谢", "stance": "chat", "commitment": "none", "note": "纯寒暄"}
+{"text": "辛苦了，今天先到这", "stance": "chat", "commitment": "none", "note": "结束语"}
+{"text": "在吗", "stance": "chat", "commitment": "none", "note": "纯寒暄"}
+{"text": "哈哈这个挺好玩", "stance": "chat", "commitment": "none", "note": "无关闲聊"}
+{"text": "你是什么模型", "stance": "chat", "commitment": "none", "note": "闲聊提问，不涉及材料"}
+{"text": "先这样吧", "stance": "chat", "commitment": "none", "note": "结束语"}
+{"text": "你能做什么", "stance": "chat", "commitment": "none", "note": "能力询问"}
+{"text": "这份周报讲了什么", "stance": "explore", "commitment": "none", "note": "问内容，读得到但不动手"}
+{"text": "old_weekly.docx 里有没有提退款", "stance": "explore", "commitment": "none", "note": "问内容，点名文件"}
+{"text": "这两份材料哪份更详细", "stance": "explore", "commitment": "none", "note": "比较，问判断"}
+{"text": "帮我把三个文件的内容对比一下", "stance": "direct", "commitment": "authorized", "note": "对比也是动手（读），语义上确属授权；不写盘所以无风险"}
+{"text": "表里第三行是什么意思", "stance": "explore", "commitment": "none", "note": "问内容"}
+{"text": "这份报告的数据口径是什么", "stance": "explore", "commitment": "none", "note": "问内容"}
+{"text": "上周那版是怎么写的", "stance": "explore", "commitment": "none", "note": "问内容，带指代"}
+{"text": "这份周报想改成给老板看的版本，怎么改好？", "stance": "explore", "commitment": "none", "note": "关键场景：带动作词的征询"}
+{"text": "这几份材料我想整理成摘要，你觉得先动哪份", "stance": "explore", "commitment": "none", "note": "带动作词的征询"}
+{"text": "要不要把这个表转成按月的", "stance": "explore", "commitment": "none", "note": "提议征询"}
+{"text": "把标题改成 8 号字，是不是会太挤", "stance": "explore", "commitment": "none", "note": "带动作词的征询"}
+{"text": "这两份合成一份会清楚很多", "stance": "explore", "commitment": "none", "note": "一句判断，没说要不要做"}
+{"text": "我觉得结构有点乱，你觉得呢", "stance": "explore", "commitment": "none", "note": "问意见"}
+{"text": "按月份拆是不是更好读", "stance": "explore", "commitment": "none", "note": "问意见"}
+{"text": "这个表如果按部门分组会不会更清楚", "stance": "explore", "commitment": "none", "note": "问意见"}
+{"text": "行距调大一点会不会好看些", "stance": "explore", "commitment": "none", "note": "问意见"}
+{"text": "我在想要不要加一节风险提示", "stance": "explore", "commitment": "none", "note": "自述想法，没定"}
+{"text": "这几份材料你帮我看看，我还没想好怎么弄", "stance": "explore", "commitment": "none", "note": "明确说没想好"}
+{"text": "这两份周报合成一份更合适", "stance": "explore", "commitment": "proposed", "note": "给了判断但没拍板"}
+{"text": "我想弄成一份周报，你看行吗", "stance": "direct", "commitment": "proposed", "note": "有明确目标，仍带确认"}
+{"text": "要不先出个草稿？", "stance": "direct", "commitment": "proposed", "note": "提议要一个草稿，但还没定"}
+{"text": "大概就是把这些内容并到一起，别太啰嗦", "stance": "explore", "commitment": "proposed", "note": "描述想要的样子，没让动手"}
+{"text": "要加一个时间线，按周排", "stance": "direct", "commitment": "authorized", "note": "加了什么、怎么排都说清了，属明确指令"}
+{"text": "语气再正式一点，给客户看的", "stance": "direct", "commitment": "authorized", "note": "给了具体改法"}
+{"text": "把退款那部分单独拎出来说", "stance": "direct", "commitment": "authorized", "note": "明确的改法"}
+{"text": "先别动，我再看看", "stance": "chat", "commitment": "none", "note": "明确叫停"}
+{"text": "不用生成了，就这样吧", "stance": "chat", "commitment": "none", "note": "撤回"}
+{"text": "等等，先别改", "stance": "chat", "commitment": "none", "note": "叫停"}
+{"text": "算了，先不弄了", "stance": "chat", "commitment": "none", "note": "放弃"}
+{"text": "再把 old_weekly.docx 也读出来", "stance": "direct", "commitment": "authorized", "note": "祈使句，对象唯一"}
+{"text": "刚才那个文件也看一下", "stance": "direct", "commitment": "authorized", "note": "祈使句，只读不写盘", "history": [{"role": "user", "content": "把 weekly.docx 读一下"}, {"role": "assistant", "content": "读完了。这是 W45 的周报，共 12 段，最后一段是下周计划。"}]}
+{"text": "它里面提到的那笔退款，原文贴我", "stance": "direct", "commitment": "authorized", "note": "明确要求贴原文"}
+{"text": "这版太长了，看得累", "stance": "explore", "commitment": "proposed", "note": "抱怨，意思是压缩，但没说怎么压"}
+{"text": "我说的是给老板看，不是给同事看", "stance": "direct", "commitment": "authorized", "note": "纠正式授权：上轮已在改，这句只改受众——纠正方向之后继续做", "history": [{"role": "user", "content": "把这份周报整理成能发出去的版本"}, {"role": "assistant", "content": "好，我按给同事看的口吻整理了一版：去掉口语、结论前置、每段不超过三句。要不要我再调？"}]}
+{"text": "这一版不对，口径跟上周对不上", "stance": "explore", "commitment": "proposed", "note": "指出问题"}
+{"text": "先读一下这两份，再合成一份周报", "stance": "direct", "commitment": "authorized", "note": "祈使句，顺序明确"}
+{"text": "帮我生成一份周报", "stance": "direct", "commitment": "authorized", "note": "明确指令"}
+{"text": "把标题居中", "stance": "direct", "commitment": "authorized", "note": "明确、范围小、结果唯一"}
+{"text": "改成 8 号字", "stance": "direct", "commitment": "authorized", "note": "同上"}
+{"text": "把这几份整理成摘要", "stance": "direct", "commitment": "authorized", "note": "祈使句，对象明确"}
+{"text": "直接生成一份周报吧", "stance": "direct", "commitment": "authorized", "note": "拍板短语"}
+{"text": "就按你说的，合成一份吧", "stance": "direct", "commitment": "authorized", "note": "承接并拍板", "history": [{"role": "user", "content": "这两份周报怎么弄"}, {"role": "assistant", "content": "我按周分组把两份合成一份、退款那段单独标出来，输出 docx。这样行吗？"}]}
+{"text": "开始吧", "stance": "direct", "commitment": "authorized", "note": "拍板短语"}
+{"text": "按这个来，导出成 pdf", "stance": "direct", "commitment": "authorized", "note": "拍板 + 格式"}
+{"text": "删掉第二段", "stance": "direct", "commitment": "authorized", "note": "明确、范围小"}
+{"text": "标题再大一点", "stance": "direct", "commitment": "authorized", "note": "纠正上一版"}
+{"text": "表格别用横线，改成三线表", "stance": "direct", "commitment": "authorized", "note": "明确改法"}
+{"text": "把这两份合并成一个文件", "stance": "direct", "commitment": "authorized", "note": "祈使句，对象唯一"}
+{"text": "用周报模板生成，docx", "stance": "direct", "commitment": "authorized", "note": "指令 + 格式"}
+{"text": "重新做一版，节奏再紧一点", "stance": "direct", "commitment": "authorized", "note": "纠正上一版"}
+{"text": "换个模板，用会议纪要那个", "stance": "direct", "commitment": "authorized", "note": "明确改法"}
+{"text": "上一版里那个表，也按这个格式改", "stance": "direct", "commitment": "authorized", "note": "延续已授权工作"}
+{"text": "把表里的数据核对一遍，有问题就标出来", "stance": "direct", "commitment": "authorized", "note": "祈使句"}
+{"text": "好", "stance": "direct", "commitment": "authorized", "note": "承接上一轮方案，短确认", "history": [{"role": "user", "content": "这三份材料怎么弄"}, {"role": "assistant", "content": "我建议压成三件事加一段风险提示，标题按老板关心的顺序重排，生成一份 docx。要这么做吗？"}]}
+{"text": "可以", "stance": "direct", "commitment": "authorized", "note": "承接上一轮", "history": [{"role": "user", "content": "这几份怎么合"}, {"role": "assistant", "content": "按月份分三节，每节列两到三条要点，最后加一段待办。这样合并可以吗？"}]}
+{"text": "就这个", "stance": "direct", "commitment": "authorized", "note": "承接上一轮", "history": [{"role": "user", "content": "哪个方案好"}, {"role": "assistant", "content": "两个方向：① 压成三件事加一段风险；② 保留过程，前面加五行摘要。你选一个。"}]}
+{"text": "嗯，就这么办", "stance": "direct", "commitment": "authorized", "note": "承接并拍板", "history": [{"role": "user", "content": "怎么改"}, {"role": "assistant", "content": "我把两份合成一份、按周分组，退款那段单独标出来，然后生成 docx。就这么做？"}]}
+{"text": "继续", "stance": "direct", "commitment": "authorized", "note": "延续上一轮动作", "history": [{"role": "user", "content": "先把这两份读了"}, {"role": "assistant", "content": "第一份读完了，正在读第二份。"}]}
+{"text": "好，那就这样", "stance": "direct", "commitment": "authorized", "note": "承接上一轮", "history": [{"role": "user", "content": "排版怎么弄"}, {"role": "assistant", "content": "标题居中、正文小四、行距 1.5、页边距上下 2.5。就按这个调？"}]}
+{"text": "先不用了，我自己看看", "stance": "chat", "commitment": "none", "note": "否定授权", "history": [{"role": "user", "content": "帮我改改"}, {"role": "assistant", "content": "要我现在生成一版吗？"}]}
+{"text": "等等，退款那段别动", "stance": "direct", "commitment": "authorized", "note": "执行中追加约束，不是新任务", "history": [{"role": "user", "content": "把这几份合一下"}, {"role": "assistant", "content": "好，我按月份合并，退款那段按原样保留。"}]}
+{"text": "谢谢您啦，辛苦", "stance": "chat", "commitment": "none", "note": "寒暄叠用：两个感谢词 + 语气词，剥完不剩东西"}
+{"text": "早上好呀👋", "stance": "chat", "commitment": "none", "note": "寒暄 + emoji；emoji 只影响「有没有内容」，不影响词法"}
+{"text": "ok thanks", "stance": "chat", "commitment": "none", "note": "纯拉丁寒暄：整段匹配，不能把 'thanks' 咬成 'hank'"}
+{"text": "👍", "stance": "chat", "commitment": "none", "note": "纯表情等同空消息，不该被当成待办"}
+{"text": "收到，辛苦了", "stance": "chat", "commitment": "none", "note": "应答叠寒暄；没有上一轮方案，不构成授权"}
+{"text": "先这样，我拿去自己改", "stance": "chat", "commitment": "none", "note": "他接手自己做，这一轮收尾"}
+{"text": "算了，不用了", "stance": "chat", "commitment": "none", "note": "两个撤回词叠用"}
+{"text": "取消吧，这版我不要了", "stance": "chat", "commitment": "none", "note": "撤回 + 理由：「取消吧」别读成「继续吧」"}
+{"text": "先放着吧，等我核对完数据再说", "stance": "chat", "commitment": "none", "note": "暂缓不是取消，但这一轮不动手"}
+{"text": "等一下，先别生成", "stance": "chat", "commitment": "none", "note": "含动作词「生成」的否句，旧词表最爱在这里翻车"}
+{"text": "别急着导，我看完再说", "stance": "chat", "commitment": "none", "note": "否定 + 延时两种挡法叠在一起"}
+{"text": "这个先不用改，改标题就行", "stance": "direct", "commitment": "authorized", "note": "分句隔离：否定只管前一句，后一句是有效指令"}
+{"text": "如果按这个来，大概要多久", "stance": "explore", "commitment": "none", "note": "条件从句 + 时长询问"}
+{"text": "要是能压到一页就好了", "stance": "explore", "commitment": "none", "note": "假设愿望，不是要求"}
+{"text": "按这个来会不会太快", "stance": "explore", "commitment": "none", "note": "拍板短语在句里，后面跟着疑问标记（中文常不打问号）"}
+{"text": "万一老板问起退款这笔，我该怎么答", "stance": "explore", "commitment": "none", "note": "假设 + 征询怎么答，两件事都不是派活"}
+{"text": "老板说要按这个来", "stance": "explore", "commitment": "proposed", "note": "转述上级的决定：方向定了，但没让你动手"}
+{"text": "客户的意思是接口那块先别写", "stance": "explore", "commitment": "none", "note": "转述里的否定是对第三方的，不是他的指令"}
+{"text": "文档里写着直接生成一份周报", "stance": "explore", "commitment": "none", "note": "文档里的字不是他的指令"}
+{"text": "我问过他了，他说可以", "stance": "explore", "commitment": "proposed", "note": "二次转述的批准，仍要他点头才动手"}
+{"text": "就按这个来？", "stance": "explore", "commitment": "proposed", "note": "拍板短语 + 问号：他在向你确认，不是在拍板"}
+{"text": "直接生成吧，行吗", "stance": "direct", "commitment": "proposed", "note": "拍板与追问挤在一句里，实际仍在征询"}
+{"text": "生成吧——不对，等等，先别", "stance": "chat", "commitment": "none", "note": "说完当场反悔，最终意思是否定"}
+{"text": "开始吧，算了，还是先看看", "stance": "chat", "commitment": "none", "note": "撤回跟在拍板后面，位置比词性重要"}
+{"text": "会议记录（W45 产品对齐）\n时间：11 月 3 日 14:00-15:20　参会：产品、运营、研发、客服\n\n一、退款流程\n客服反馈本月退款工单 47 单，其中 12 单卡在财务复核环节，平均滞留 3.2 天。运营建议把五百元以下的小额退款改为系统自动放行，财务只做事后抽查。研发评估要改两个接口，预计三个工作日，风险是自动放行后订单状态不同步时会出现重复退款。\n\n二、周报口径\n产品要求周报里的退款金额按订单数统计，不再按金额口径，理由是金额受大额订单影响太不稳定。上次周报因为口径不一致被退回过一次。\n\n三、下周计划\n1. 完成小额退款自动放行的技术方案评审\n2. 周报模板改版，退款单独成节\n3. 客服侧补充退款时效的看板\n\n四、预算\n本季度市场预算还剩 38 万，其中退款相关的客服成本占 4.6 万。财务提醒预算只能按季度调，跨季度挪用要走审批，年底前不再新增供应商。\n\n先帮我看看有没有漏掉的", "stance": "explore", "commitment": "authorized", "note": "读也算动手（见 reading 的 commitment 定义）：402 字越过分析窗口，指令在尾部"}
+{"text": "会议记录（W45 产品对齐）\n时间：11 月 3 日 14:00-15:20　参会：产品、运营、研发、客服\n\n一、退款流程\n客服反馈本月退款工单 47 单，其中 12 单卡在财务复核环节，平均滞留 3.2 天。运营建议把五百元以下的小额退款改为系统自动放行，财务只做事后抽查。研发评估要改两个接口，预计三个工作日，风险是自动放行后订单状态不同步时会出现重复退款。\n\n二、周报口径\n产品要求周报里的退款金额按订单数统计，不再按金额口径，理由是金额受大额订单影响太不稳定。上次周报因为口径不一致被退回过一次。\n\n三、下周计划\n1. 完成小额退款自动放行的技术方案评审\n2. 周报模板改版，退款单独成节\n3. 客服侧补充退款时效的看板\n\n四、预算\n本季度市场预算还剩 38 万，其中退款相关的客服成本占 4.6 万。财务提醒预算只能按季度调，跨季度挪用要走审批，年底前不再新增供应商。\n\n按这个整理成周报", "stance": "direct", "commitment": "authorized", "note": "399 字贴着窗口边界：整句仍可分析"}
+{"text": "能帮我生成一份周报吗", "stance": "direct", "commitment": "authorized", "note": "礼貌请求：「能不能」开头仍是请你动手"}
+{"text": "帮我看看怎么改比较好", "stance": "explore", "commitment": "none", "note": "带「帮我」但在问意见，不是让你改"}
+{"text": "你看着办吧", "stance": "direct", "commitment": "authorized", "note": "甩手式授权：上一轮已经把方案说清，才敢这么应", "history": [{"role": "user", "content": "这两份周报怎么弄"}, {"role": "assistant", "content": "我按周分组把两份合成一份，退款那段单独标出来，口径按订单数，输出 docx。要我按这个做吗？"}]}
+{"text": "随便，哪个都行", "stance": "direct", "commitment": "authorized", "note": "选项由你定，前提是选项已经列出来过", "history": [{"role": "user", "content": "用哪个模板好"}, {"role": "assistant", "content": "两个选择：A 周报模板，四段式、偏简；B 会议纪要模板，带决议和待办。你说用哪个。"}]}
+{"text": "谢谢你，另外把周报标题改成 W45 复盘", "stance": "direct", "commitment": "authorized", "note": "寒暄 + 指令：剥寒暄不能连指令一起剥掉"}
+{"text": "先这样，明天把剩下的补上", "stance": "chat", "commitment": "none", "note": "收尾 + 明天的活，今天不动手"}
+{"text": "ok, go ahead", "stance": "direct", "commitment": "authorized", "note": "拉丁授权词，词表没有，只能靠理解层"}
+{"text": "sounds good，但标题再大点", "stance": "direct", "commitment": "authorized", "note": "部分同意 + 新指令"}
+{"text": "那个也改一下", "stance": "explore", "commitment": "none", "note": "上文提过两份文件，「那个」不唯一，该先问是哪个", "history": [{"role": "user", "content": "这两个都读一下"}, {"role": "assistant", "content": "weekly_w45.docx 和 old_weekly.docx 都读完了，两份结构不一样。"}]}
+{"text": "快点吧，下午要用", "stance": "direct", "commitment": "authorized", "note": "催促是继续做，不是新需求", "history": [{"role": "user", "content": "按订单数口径重做一版"}, {"role": "assistant", "content": "好，正在重排，还差退款那节的数字要核对。"}]}
+{"text": "你把刚才那段再念一遍", "stance": "direct", "commitment": "authorized", "note": "明确、结果唯一，对象指上文", "history": [{"role": "user", "content": "这段你看着用"}, {"role": "assistant", "content": "收到了。这段我先留着，没动。"}]}
+{"text": "先别生成吧，我就是想问问周报该怎么写", "stance": "explore", "commitment": "none", "note": "叫停 + 自述只问：句中有「生成吧」这个最强拍板短语，位置在「先别」之后"}
+{"text": "我只是打听一下周报的格式", "stance": "explore", "commitment": "none", "note": "自述只问：他自己说了意图，比任何推断都可信"}
+{"text": "先给方案，我点头了再落盘", "stance": "explore", "commitment": "proposed", "note": "推后授权：含「落盘」但被「我点头了再」推到条件满足之后"}
+{"text": "老板说先别生成，等他看完再说", "stance": "explore", "commitment": "none", "note": "转述里的叫停是对第三方的，不是他的指令"}
+{"text": "先别管格式，直接生成吧", "stance": "direct", "commitment": "authorized", "note": "叫停与明确指令同时出现：听更具体的那个（「先别管」管的是格式）"}
+{"text": "这就要看你想给谁看了", "stance": "chat", "commitment": "none", "note": "虚词「这就」不是承诺；整句把问题反抛回来，属于对话性回应"}
+{"text": "你说从哪开始做比较好", "stance": "explore", "commitment": "none", "note": "「开始做」在这里是话题，整句在问顺序"}

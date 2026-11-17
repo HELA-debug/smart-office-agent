@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <style>
+      /* JS/CSS 到位之前先把底色铺上：默认深色，避免首屏白一下。
+         值与 tokens.css 的 --color-canvas 一致，否则加载完会看到一次跳色。 */
+      html {
+        background: #101317;
+      }
+      html:not(.dark) {
+        background: #f3f5f9;
+      }
+    </style>
+    <script>
+      // 与 shared/lib/theme.ts 同一套规则（默认深色、存了偏好就听偏好），
+      // 提前到首屏之前执行，滚动条/表单这些原生控件也跟着走深色。
+      (function () {
+        var dark = true;
+        try {
+          var stored = localStorage.getItem('oa:theme');
+          dark = stored !== 'light';
+        } catch (error) {
+          /* 隐私模式读不到 localStorage：仍按默认的深色 */
+        }
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <meta name="description" content="Office Agent 工作台：把材料整理成可交付的办公文档。" />
+    <!-- 可安装（PWA）：有了 manifest + Service Worker，Chrome/Edge 才会认为这个站能装，
+         右栏的「一键安装」也才有真实的 beforeinstallprompt 可用。 -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- 标题栏 / 移动端状态栏的颜色必须与页面最上沿同色（--color-canvas），
+         不能用品牌蓝，也不能用更深的壳色：装成桌面端后浏览器会用这个颜色涂满
+         整条标题栏，与界面差一档就会在屏幕上沿留一条「另一套配色」的横带。
+         两条 media 让 JS 还没跑起来时也对，之后由 shared/lib/theme.ts 按应用主题改写。 -->
+    <meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#101317" media="(prefers-color-scheme: dark)" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Office Agent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Office Agent · 工作台</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

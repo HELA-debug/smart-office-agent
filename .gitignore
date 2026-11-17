@@ -1,0 +1,98 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+htmlcov/
+frontend/coverage/
+
+# ---- 运行时数据（不提交）----
+# 用 data/* 而不是 data/，否则 !data/.gitkeep 无法生效（git 不重新包含被忽略父目录内的文件）
+data/*
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+logs/
+*.log
+# 删除技能时后端会把目录挪进 app/skills/.trash（可人工捞回），属于运行时产物
+backend/app/skills/.trash/
+# 下面三个是「运行时输出目录」，必须锚定到仓库根目录：
+# 不带前导 / 时 git 会匹配任意层级的同名目录，实测会连带忽略
+# frontend/src/features/artifacts/（整个产物中心 feature 模块，从未入库）。
+/outbox/
+/uploads/
+/artifacts/
+# 语音识别模型（faster-whisper 首次使用下载到 models/asr，一个 base 就 145MB）
+/models/
+
+# ---- Node / 前端 ----
+node_modules/
+dist/
+build/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo
+
+# ---- 环境变量与密钥（只提交 .env.example）----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ---- 契约：快照入库；只忽略生成过程的临时文件 ----
+# contracts/openapi.v1.json、contracts/events.v1.schema.json 必须提交（CI diff 校验）
+contracts/.tmp/
+contracts/*.tmp.json
+contracts/*.tmp/
+frontend/src/shared/api/generated/*.tmp
+frontend/src/shared/api/generated/.tmp/
+
+# ---- 测试残留（Batch 0 加固）----
+# 历史事故：根目录曾堆积 44 个 oam_* / pip-* / pytest-of-* 临时目录
+oam_*/
+oam_*
+pip-*/
+pip-*
+pytest-of-*/
+pytest-of-*
+.pytest_tmp/
+tests/.tmp/
+tests/tmp/
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ---- 临时产物 ----
+tmp/
+.tmp/
+scratch/
+# 根目录散落的 tmp* 临时文件/目录（曾在工作区残留 tmpmopmgbv4，误导 CI「工作区洁净」断言）
+/tmp*
+# pytest 会话临时根（conftest 写入 .pytest-tmp/<pid>）
+.pytest-tmp/
+# 临时改名出来的旧根（Windows 上有残留句柄时只能改名不能删）
+.pytest-tmp-*/
+# UI 巡检的逐页截图（几十张、每轮都重拍）：只留 sweep.json 与报告入库，
+# 截图留在本地供人眼复核，避免仓库被二进制证据撑大
+docs/test-evidence-*/shots/
+
+# ---- WorkBuddy 工作区数据（会话记录 / 记忆，不入库）----
+.workbuddy/

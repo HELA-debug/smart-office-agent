@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Office Agent">
+  <!-- 白底 + 深墨图形：和 DeepSeek Harness 那种「白圆角板 + 单色主体」是同一种语言。
+       品牌蓝只留给那颗星，用作「这份文档是 AI 生成的」这一处强调。 -->
+  <rect width="512" height="512" rx="112" fill="#ffffff" />
+  <!-- 极浅描边：图标落在白色开始菜单/任务栏上时不至于糊成一团 -->
+  <rect x="1.5" y="1.5" width="509" height="509" rx="110.5" fill="none" stroke="#d9e0ea" stroke-width="3" />
+  <g transform="translate(-56 -3)">
+    <!-- 文档：A4 比例，右上折角切一刀 -->
+    <path
+      d="M186 96H280L356 172V386A30 30 0 0 1 326 416H186A30 30 0 0 1 156 386V126A30 30 0 0 1 186 96Z"
+      fill="#0d1526"
+    />
+    <!-- 折下来的那半页：比主色浅，读起来是「纸」而不是缺口 -->
+    <path d="M280 96L356 172H288A8 8 0 0 1 280 164Z" fill="#eef2f7" />
+    <!-- 文字行用负空间（挖白），小尺寸下比描边更清楚 -->
+    <rect x="194" y="238" width="124" height="22" rx="11" fill="#ffffff" />
+    <rect x="194" y="290" width="124" height="22" rx="11" fill="#ffffff" />
+    <rect x="194" y="342" width="82" height="22" rx="11" fill="#ffffff" />
+    <!-- 星：AI 生成标记。刻意咬进文档右下角，缩到 16px 也还是「文档 + 一个亮点」 -->
+    <path
+      d="M398 282C404 334 412 342 466 348C412 354 404 362 398 414C392 362 384 354 330 348C384 342 392 334 398 282Z"
+      fill="#2563eb"
+    />
+  </g>
+</svg>

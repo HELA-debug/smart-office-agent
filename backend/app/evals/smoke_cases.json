@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "smoke-01",
+      "name": "健康检查与 mock 模式",
+      "steps": ["GET /api/health"],
+      "expect": ["status=ok", "mode=mock", "mock=true", "带 trace_id"],
+      "offline": true
+    },
+    {
+      "id": "smoke-02",
+      "name": "新建与列出会话",
+      "steps": ["POST /api/threads", "GET /api/threads"],
+      "expect": ["返回 thread_id", "列表包含新会话", "message_count/artifact_count 字段存在"],
+      "offline": true
+    },
+    {
+      "id": "smoke-03",
+      "name": "上传 txt 素材并解析",
+      "steps": ["POST /api/threads/{tid}/files (file=材料.txt)"],
+      "expect": ["file_id 以 art_ 开头", "parsed=true", "chars>0", "artifacts.type=upload"],
+      "offline": true
+    },
+    {
+      "id": "smoke-04",
+      "name": "上传 docx 素材并解析",
+      "steps": ["POST /api/threads/{tid}/files (file=会议记录.docx)"],
+      "expect": ["type=docx", "chars>0", "解析失败时返回 422 FILE_PARSE_ERROR 而非 500"],
+      "offline": true
+    },
+    {
+      "id": "smoke-05",
+      "name": "不支持的文件类型",
+      "steps": ["POST /api/threads/{tid}/files (file=病毒.exe)"],
+      "expect": ["HTTP 415", "error.code=UNSUPPORTED_FILE_TYPE"],
+      "offline": true
+    },
+    {
+      "id": "smoke-06",
+      "name": "主链路批准：SSE 事件顺序与字段",
+      "steps": [
+        "POST /runs/stream",
+        "读取直到 approval.required",
+        "POST /approvals/{aid} {decision: approved}",
+        "继续读流直到 run.completed"
+      ],
+      "expect": [
+        "run.started -> message.delta* -> message.completed -> plan.updated(3 条) -> tool.finished(file.list) -> tool.finished(file.read) -> approval.required(doc.generate_report)",
+        "批准后 tool.finished(doc.generate_report ok=true) -> artifact.ready -> plan.updated -> message.delta -> run.completed(status=completed)",
+        "run.completed 含 tokens/cost_cny/elapsed_ms/artifact_ids/approvals",
+        "产物可下载且 preview 可用"
+      ],
+      "offline": true
+    },
+    {
+      "id": "smoke-07",
+      "name": "主链路拒绝：不产生外部写操作",
+      "steps": ["POST /runs/stream", "在 approval.required 后 POST 审批 rejected"],
+      "expect": [
+        "tool.finished(doc.generate_report ok=false, output.skipped=true)",
+        "run.completed status=rejected",
+        "plan.updated 中 t3=cancelled",
+        "不产生新的产物文件"
+      ],
+      "offline": true
+    },
+    {
+      "id": "smoke-08",
+      "name": "审批幂等与不存在",
+      "steps": ["重复 POST 同一审批", "POST 不存在的 approval_id"],
+      "expect": ["重复提交 HTTP 409 APPROVAL_ALREADY_DECIDED", "不存在 HTTP 404 NOT_FOUND"],
+      "offline": true
+    },
+    {
+      "id": "smoke-09",
+      "name": "DOCX 可重新打开且结构完整",
+      "steps": ["GET /api/artifacts/{aid}/download", "python-docx 打开"],
+      "expect": [
+        "标题存在",
+        "包含 摘要/本周进展/关键数据/风险与问题/下周计划",
+        "不含「来源引用」小节，也没有「来源：」落款行"
+      ],
+      "offline": true
+    },
+    {
+      "id": "smoke-10",
+      "name": "审计接口与四张表写入",
+      "steps": ["GET /api/threads/{tid}/audit", "sqlite 查询四张表"],
+      "expect": [
+        "runs[0].run_id 与 SSE 一致",
+        "tokens/cost_cny/elapsed_ms/approvals 可查",
+        "threads/messages/approvals/artifacts 行数均 > 0"
+      ],
+      "offline": true
+    }
+  ]
+}

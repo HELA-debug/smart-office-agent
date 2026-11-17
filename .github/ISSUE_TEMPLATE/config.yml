@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞
+    url: https://example.com/office-agent-mvp/security
+    about: 请勿在公开 Issue 中报告密钥泄露或安全漏洞，走私下渠道。
+  - name: 使用问题
+    url: https://example.com/office-agent-mvp/discussions
+    about: 启动、配置、演示相关问题先看 README 与 KNOWN_ISSUES。

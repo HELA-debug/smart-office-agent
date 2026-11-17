@@ -1,0 +1,470 @@
+name: CI (V2.1 六门禁)
+
+# V2.1 Batch 0：六道门禁骨架
+# 约定：相关文件未就绪时 job 必须「明确失败并提示缺什么」，不得空跑成功；
+#       B1/B2 落地后由 Lead/QA 校准为真实门禁。
+# 门禁：1 backend-lint / 2 backend-test / 3 frontend-quality / 4 contract / 5 build / 6 security
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # Playwright E2E 不阻塞每个 PR（计划书：nightly / release 前跑）
+  schedule:
+    - cron: "0 18 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.13"
+  NODE_VERSION: "20"
+  # Windows 环境 NO_PROXY 含 [::1] 会让 httpx 报 Invalid port: ':1]'；CI 统一清理
+  NO_PROXY: "localhost,127.0.0.1"
+  no_proxy: "localhost,127.0.0.1"
+  PIP_INDEX_URL: "https://mirrors.aliyun.com/pypi/simple"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  # ── 门禁 1：后端静态检查（ruff check / ruff format --check / mypy）──────────
+  backend-lint:
+    name: "1. backend-lint (ruff + mypy)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 前置检查（B1 交付物）
+        run: |
+          if [ ! -f backend/pyproject.toml ]; then
+            echo "::error::backend/pyproject.toml 不存在。该门禁依赖 B1 交付的 Python 工程根（ruff/mypy 配置）。"
+            echo "B0 阶段此门禁为骨架：请完成 B1 后重跑，或由 QA 按实际工具链校准。"
+            exit 1
+          fi
+          if [ ! -d backend/app ]; then
+            echo "::error::backend/app/ 不存在。该门禁默认扫描 backend/app（V2.1 分层目标结构）。"
+            exit 1
+          fi
+
+      - name: 安装检查工具
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ruff mypy
+
+      - name: ruff check
+        working-directory: backend
+        run: ruff check .
+
+      - name: ruff format --check
+        working-directory: backend
+        run: ruff format --check .
+
+      - name: mypy app（strict）
+        working-directory: backend
+        run: mypy app
+
+  # ── 门禁 2：后端测试与覆盖率（pytest --cov，含工作区洁净断言）─────────────
+  backend-test:
+    name: "2. backend-test (pytest + coverage)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 前置检查（B1 交付物）
+        run: |
+          if [ ! -f backend/pyproject.toml ]; then
+            echo "::error::backend/pyproject.toml 不存在，无法按 pyproject 安装与运行 pytest。"
+            exit 1
+          fi
+          if [ ! -d backend/tests ]; then
+            echo "::error::backend/tests/ 不存在。"
+            exit 1
+          fi
+
+      - name: 安装后端与测试依赖
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest pytest-cov httpx jsonschema
+
+      - name: pytest（单元 + 集成 + 契约，覆盖率门槛 70%）
+        working-directory: backend
+        env:
+          MOCK_MODE: "true"
+          DATABASE_URL: "sqlite:///:memory:"
+        run: |
+          pytest --cov=app --cov-report=term-missing \
+                 --cov-report=xml:coverage.xml \
+                 --cov-fail-under=70
+
+      - name: 30 条 smoke（自动起 mock 服务 8004，端到端）
+        run: |
+          set -e
+          mkdir -p data/b5/uploads data/b5/artifacts data/b5/outbox
+          MOCK_MODE=true ENGINE=mock DATABASE_URL=sqlite:///data/b5_mock.db \
+            UPLOAD_DIR=./data/b5/uploads ARTIFACT_DIR=./data/b5/artifacts OUTBOX_DIR=./data/b5/outbox \
+            nohup python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8004 > data/b5_mock.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8004/api/v1/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8004/api/v1/health >/dev/null || { echo "::error::mock 服务未就绪"; tail -100 data/b5_mock.log; exit 1; }
+          python -m pytest tests -q --base-url=http://127.0.0.1:8004
+
+      - name: 工作区洁净断言（无测试残留，DoD 工程第 18 条）
+        run: |
+          status="$(git status --porcelain)"
+          if [ -n "$status" ]; then
+            echo "::error::测试结束后工作区不干净：存在未被 .gitignore 覆盖的残留文件/目录（历史事故：44 个 oam_*/pip-*/pytest-of-*）。"
+            echo "$status"
+            echo "修复方式：测试改用 tmp_path，或把对应产物加入 .gitignore / 清理。"
+            exit 1
+          fi
+          echo "工作区干净：git status --porcelain 为空"
+
+      - name: 失败时上传覆盖率报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: |
+            backend/coverage.xml
+            backend/.coverage
+          if-no-files-found: ignore
+
+  # ── 门禁 3：前端质量（eslint / prettier / tsc / vitest）────────────────────
+  frontend-quality:
+    name: "3. frontend-quality (eslint + prettier + tsc + vitest)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 前置检查（B2 交付物）
+        working-directory: frontend
+        run: |
+          if [ ! -f package.json ]; then
+            echo "::error::frontend/package.json 不存在。"
+            exit 1
+          fi
+          missing=""
+          for s in lint format:check typecheck test; do
+            if ! node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts['$s'] ? 0 : 1)"; then
+              missing="$missing $s"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::frontend/package.json 缺少 scripts:$missing（eslint/prettier/tsc/vitest）。"
+            exit 1
+          fi
+
+      - name: 安装前端依赖
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: eslint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: prettier --check
+        working-directory: frontend
+        run: npm run format:check
+
+      - name: tsc -b
+        working-directory: frontend
+        run: npm run typecheck
+
+      # 覆盖率门槛（40% 起）写在 frontend/vitest.config.ts 的 coverage.thresholds，
+      # 低于门槛时 vitest 会以非 0 退出，无需在 CI 里重复写判定逻辑。
+      - name: vitest + coverage（含 40% 门槛）
+        working-directory: frontend
+        run: npm run test:coverage
+
+  # ── 门禁 4：契约快照（OpenAPI / 事件 JSON Schema diff 为空）────────────────
+  contract:
+    name: "4. contract (OpenAPI + events snapshot)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 前置检查（B1/B5 交付物）
+        run: |
+          if [ ! -f backend/pyproject.toml ]; then
+            echo "::error::backend/pyproject.toml 不存在：无法导入后端导出 OpenAPI。"
+            exit 1
+          fi
+          if [ ! -f scripts/export_openapi.py ]; then
+            echo "::error::scripts/export_openapi.py 不存在（契约导出脚本，B1/B5 交付物）。"
+            echo "B0 阶段此门禁为骨架：脚本就绪前必须失败，不允许空跑成功。"
+            exit 1
+          fi
+          for f in contracts/openapi.v1.json contracts/events.v1.schema.json; do
+            if [ ! -f "$f" ]; then
+              echo "::error::契约快照 $f 未入库。请先导出并提交快照。"
+              exit 1
+            fi
+          done
+
+      - name: 安装后端依赖
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: 重新导出契约快照
+        env:
+          MOCK_MODE: "true"
+        run: python scripts/export_openapi.py
+
+      - name: 快照 diff 必须为空（破坏性变更需先升版本 + ADR）
+        run: |
+          if ! git diff --exit-code contracts/; then
+            echo "::error::契约快照与代码不一致：请把 contracts/ 的变更一并提交；破坏性变更需升版本（/api/v2、events version=2）并补 ADR。"
+            exit 1
+          fi
+          echo "契约快照一致：git diff --exit-code contracts/ 为空"
+
+      - name: 快照自检（JSON 可解析 + 路径数 + 前端类型一致性）
+        run: |
+          set -e
+          python - <<'PY'
+          import json
+          spec = json.load(open("contracts/openapi.v1.json", encoding="utf-8"))
+          events = json.load(open("contracts/events.v1.schema.json", encoding="utf-8"))
+          paths = spec.get("paths", {})
+          ops = sum(len(item) for item in paths.values())
+          assert paths, "openapi 快照没有 paths"
+          assert "/api/v1/health" in paths, "openapi 快照缺 /api/v1/health"
+          assert "run.completed" in str(events), "events 快照缺事件枚举"
+          print(f"openapi: {len(paths)} paths / {ops} operations；events: version={events.get('x-event-version')}")
+          PY
+          cd frontend
+          if [ ! -f package-lock.json ]; then
+            echo "::error::frontend/package-lock.json 不存在，无法校验生成类型一致性"
+            exit 1
+          fi
+          npm ci
+          npx --no-install openapi-typescript ../contracts/openapi.v1.json -o /tmp/schema.generated.d.ts
+          # gen-api.mjs 用 astToString（无 banner）；CLI 会加 4 行 banner + 空行，比对前统一去掉
+          sed '/^\/\*\*$/,/^ \*\/$/d' /tmp/schema.generated.d.ts | sed '1{/^$/d;}' > /tmp/schema.norm.d.ts
+          if ! diff -q /tmp/schema.norm.d.ts src/shared/api/generated/schema.d.ts; then
+            echo "::error::前端生成类型与契约快照不一致：请在 frontend/ 执行 npm run gen:api（或 openapi-typescript ../contracts/openapi.v1.json -o src/shared/api/generated/schema.d.ts）并提交。"
+            diff -u /tmp/schema.norm.d.ts src/shared/api/generated/schema.d.ts | head -100 || true
+            exit 1
+          fi
+          echo "前端生成类型与契约快照一致"
+
+  # ── 门禁 5：构建（vite build + Docker 条件执行）────────────────────────────
+  build:
+    name: "5. build (vite + docker)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 前置检查
+        run: |
+          if [ ! -f frontend/package.json ]; then
+            echo "::error::frontend/package.json 不存在。"
+            exit 1
+          fi
+
+      - name: 前端生产构建
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm run build
+
+      - name: Docker 双镜像（Docker 可用时执行，否则显式告警跳过）
+        run: |
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "::warning::Docker 未安装：跳过镜像构建。该门禁未验证镜像，需在有 Docker 的机器补跑（KNOWN_ISSUES #1）。"
+            echo "### 门禁 5 部分跳过：Docker 不可用" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if ! docker info >/dev/null 2>&1; then
+            echo "::warning::Docker daemon 不可用：跳过镜像构建（同上）。"
+            echo "### 门禁 5 部分跳过：Docker daemon 不可用" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          docker compose build
+          docker compose up -d
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/api/health >/dev/null 2>&1; then
+              echo "compose 冒烟通过：web 8080 + api 健康检查"; docker compose down -v; exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::compose 启动后 120 秒内 /api/health 不可用"
+          docker compose logs --tail=200
+          docker compose down -v
+          exit 1
+
+  # ── 门禁 6：安全（secret/PII 扫描 + pip-audit + npm audit + bandit）────────
+  security:
+    name: "6. security (secret scan + audits)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: .env 不得入库
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env 被提交进仓库！立即移除并轮换密钥。"
+            exit 1
+          fi
+          echo ".env 未被跟踪（gitignored）"
+
+      - name: secret 扫描（只扫 git 跟踪文件；显式排除 .env）
+        run: |
+          set -e
+          echo "== API Key / Token / 私钥 =="
+          if git grep -nE 'sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----' \
+               -- . ':(exclude).env*'; then
+            echo "::error::发现疑似密钥硬编码"; exit 1
+          fi
+          echo "== 供应商 Key 非空字面量（占位应为空）=="
+          if git grep -nE '(DEEPSEEK|DASHSCOPE|GLM|OPENAI)_API_KEY[[:space:]]*=[[:space:]]*[A-Za-z0-9_-]{16,}' \
+               -- . ':(exclude).env*' ':(exclude).env.example'; then
+            echo "::error::供应商 API Key 出现非空字面量；真实 Key 只能放 .env（gitignored）"; exit 1
+          fi
+          echo "secret 扫描通过"
+
+      - name: PII 扫描（邮箱/手机号/身份证）
+        run: |
+          set -e
+          if git grep -nE '[A-Za-z0-9._%+-]+@(qq|163|126|gmail|outlook|hotmail|foxmail|sina|sohu)\.(com|cn)' \
+               -- . ':(exclude).env*'; then
+            echo "::error::发现真实邮箱域名，演示数据请用 @example.com"; exit 1
+          fi
+          if git grep -nE '(^|[^0-9])(1[3-9][0-9]{9})([^0-9]|$)' -- . ':(exclude).env*'; then
+            echo "::error::发现疑似手机号"; exit 1
+          fi
+          if git grep -nE '(^|[^0-9])([1-9][0-9]{5}(19|20)[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[0-9]{3}[0-9Xx])([^0-9]|$)' \
+               -- . ':(exclude).env*'; then
+            echo "::error::发现疑似身份证号"; exit 1
+          fi
+          echo "PII 扫描通过"
+
+      - name: 依赖清单一致性（pyproject / requirements.api / lock）
+        run: |
+          # 三份清单必须一致；lock 必须全部 == 精确定版（可复现构建的前提）
+          python scripts/check_requirements_sync.py
+
+      - name: pip-audit（Python 依赖漏洞）
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pip-audit
+          # 审计锁定文件：包含全部传递依赖，比手抄的顶层清单更完整。
+          # 二者一致性已由上一步校验，故不再单独审计 requirements.api.txt。
+          if [ -f deploy/requirements.lock.txt ]; then
+            python -m pip_audit -r deploy/requirements.lock.txt
+          elif [ -f deploy/requirements.api.txt ]; then
+            echo "::warning::缺少 deploy/requirements.lock.txt，退回审计顶层清单（请补锁文件）"
+            python -m pip_audit -r deploy/requirements.api.txt
+          else
+            echo "::error::没有可审计的 Python 依赖清单"
+            exit 1
+          fi
+
+      - name: npm audit（前端依赖漏洞）
+        run: |
+          if [ ! -f frontend/package-lock.json ]; then
+            echo "::error::frontend/package-lock.json 不存在，无法 npm audit（锁文件必须入库，DoD 工程第 20 条）"
+            exit 1
+          fi
+          cd frontend
+          npm audit --omit=dev --audit-level=high
+
+      - name: bandit（后端代码安全扫描）
+        run: |
+          python -m pip install bandit
+          if [ -d backend/app ]; then
+            target=backend/app
+          elif [ -d backend ]; then
+            target=backend
+          else
+            echo "::error::后端源码目录不存在"; exit 1
+          fi
+          bandit -r "$target" -x backend/tests -ll
+
+  # ── 附加：Playwright E2E（nightly / 手动触发；不阻塞 PR）────────────────────
+  e2e:
+    name: "E2E. Playwright 6 条（nightly）"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装并启动 mock 后端（8000）
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e backend
+          python -m pip install pytest httpx jsonschema
+          mkdir -p data/b5/uploads data/b5/artifacts data/b5/outbox
+          MOCK_MODE=true ENGINE=mock DATABASE_URL=sqlite:///data/b5_e2e.db \
+            UPLOAD_DIR=./data/b5/uploads ARTIFACT_DIR=./data/b5/artifacts OUTBOX_DIR=./data/b5/outbox \
+            nohup python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 > data/b5_e2e.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/api/v1/health >/dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "::error::mock 后端未就绪"; tail -100 data/b5_e2e.log; exit 1
+
+      - name: 安装前端依赖并启动 dev server
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          nohup npm run dev > /tmp/vite.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5173/ >/dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "::error::Vite 未就绪"; tail -100 /tmp/vite.log; exit 1
+
+      - name: 安装浏览器并跑 Playwright 6 条
+        working-directory: frontend
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      - name: 失败时上传 Playwright 报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          if-no-files-found: ignore

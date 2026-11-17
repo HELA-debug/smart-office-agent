@@ -1,0 +1,6 @@
+# Windows 批处理必须是 CRLF：LF 的 .cmd 在 cmd.exe 里遇到 goto/label 会跳错行
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+# macOS 的 .command 靠 shebang 执行，必须是 LF
+*.command text eol=lf
+*.sh    text eol=lf

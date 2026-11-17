@@ -1,0 +1,94 @@
+# pre-commit 本地钩子（V2.1 B0 地基）
+# 安装：pip install pre-commit && pre-commit install
+# 全量运行：pre-commit run --all-files
+#
+# 说明：
+# - 后端钩子只作用于 backend/；B1 落地 backend/pyproject.toml 后自动生效。
+# - 前端 eslint/prettier 钩子标为 manual：B2 落地 ESLint/Prettier 配置后启用：
+#     pre-commit run --hook-stage manual --all-files
+# - 版本号在 B1/B2 校准工具链时统一升级。
+
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  # ---- 通用文件卫生 ----
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(docs/.*\.md|.*\.(svg|snap))$
+      - id: end-of-file-fixer
+        exclude: ^(docs/.*\.md)$
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # ---- 后端：ruff + mypy（backend/app/，B1 后生效）----
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        name: ruff check (backend)
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        name: ruff format (backend)
+        files: ^backend/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        name: mypy (backend/app)
+        files: ^backend/app/.*\.py$
+        args: [--config-file=backend/pyproject.toml]
+        additional_dependencies:
+          - pydantic>=2
+          - pydantic-settings>=2
+          - fastapi>=0.110
+          - types-requests
+
+  # ---- 前端：eslint + prettier（B2 后启用；当前 manual 防阻塞）----
+  - repo: local
+    hooks:
+      - id: frontend-eslint
+        name: eslint (frontend)
+        entry: npm --prefix frontend run lint
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx)$
+        pass_filenames: false
+        stages: [manual]
+
+      - id: frontend-prettier
+        name: prettier --check (frontend)
+        entry: npm --prefix frontend run format:check
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx|json|css|md)$
+        pass_filenames: false
+        stages: [manual]
+
+      - id: frontend-typecheck
+        name: tsc -b (frontend)
+        entry: npm --prefix frontend run typecheck
+        language: system
+        files: ^frontend/.*\.(ts|tsx)$
+        pass_filenames: false
+        stages: [manual]
+
+  # ---- 提交信息：Conventional Commits（commit-msg 阶段；轻量 commitlint）----
+  - repo: local
+    hooks:
+      - id: conventional-commit-msg
+        name: conventional commit-msg
+        entry: python scripts/check_commit_msg.py
+        language: system
+        stages: [commit-msg]
+        always_run: true

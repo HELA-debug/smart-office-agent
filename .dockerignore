@@ -1,0 +1,36 @@
+# Docker 构建上下文裁剪：避免把 .venv / node_modules / 运行期数据打进镜像
+# （尤其 node_modules 含 Windows 平台二进制，拷进 alpine 会破坏构建）
+
+.git
+.gitignore
+.github
+.venv
+venv
+
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+data
+tests
+docs
+pytest-of-*
+pip-*
+*.db
+*.sqlite
+*.log
+
+frontend/node_modules
+frontend/dist
+frontend/.vite
+**/node_modules
+
+.env
+.env.*
+!.env.example
+
+# 构建不需要的演示/办公产物
+*.docx
+*.pdf

@@ -1,0 +1,89 @@
+# 模型价目表（成本估算口径：元 / 每百万 tokens）
+#
+# 说明：
+# - 这里是**估算**口径，用于 run.completed 与审计页展示；真实账单以供应商为准；
+# - 价格随官网调整，改本文件即可，无需改代码（改完不用重启：按 mtime 重新加载）；
+# - 查找顺序：providers.<provider>.models.<model> -> providers.<provider>.default -> default；
+# - 表里写的是**闲时价**，高峰时段按 providers.<provider>.peak_multiplier 翻倍；
+# - model 名用供应商回执里的名字（如 deepseek-flash 就是官方真名，deepseek-chat 是旧别名）。
+#
+# 为什么要有「缓存命中 / 未命中」两档：
+#   DeepSeek 控制台上「1.19 亿 tokens 只花 ¥5.86」看着像 ¥0.05/百万，其实是那批 token
+#   里绝大多数命中了上下文缓存（¥0.02–0.04/百万）。本应用每轮上下文都在变，基本是
+#   「未命中」（¥1–2/百万），两个平均价直接对比会差 50 倍，谁看都觉得是编的。
+currency: CNY
+unit: per_million_tokens
+
+# 官方分时计价（北京时间，工作日两个高峰段；周末与节假日全天闲时）
+peak:
+  weekdays: [0, 1, 2, 3, 4] # 0 = 周一
+  ranges:
+    - ['09:00', '12:00']
+    - ['14:00', '18:00']
+
+# 兜底价：按高峰、全未命中估，宁可高估也不低报
+default:
+  input_cache_hit: 0.04
+  input_cache_miss: 2.0
+  output: 8.0
+
+providers:
+  deepseek:
+    # 官方：闲时 = 高峰的一半。这里写闲时价，高峰自动 ×2
+    peak_multiplier: 2.0
+    default:
+      input_cache_hit: 0.02
+      input_cache_miss: 1.0
+      output: 4.0
+    models:
+      # DeepSeek-V4.1-Flash-1017（官方唯一在售型号，旧名会被路由到它并按 Flash 计费）
+      deepseek-flash:
+        input_cache_hit: 0.02
+        input_cache_miss: 1.0
+        output: 4.0
+      deepseek-chat:
+        input_cache_hit: 0.02
+        input_cache_miss: 1.0
+        output: 4.0
+      deepseek-v4-pro:
+        input_cache_hit: 0.02
+        input_cache_miss: 1.0
+        output: 4.0
+  qwen:
+    # 阿里云百炼 DashScope 兼容模式（估算，仅供参考）
+    default:
+      input: 0.8
+      output: 2.0
+    models:
+      qwen-plus:
+        input: 0.8
+        output: 2.0
+      qwen-max:
+        input: 2.4
+        output: 9.6
+      qwen-turbo:
+        input: 0.3
+        output: 0.6
+  glm:
+    # 智谱开放平台（估算，仅供参考）
+    default:
+      input: 4.0
+      output: 16.0
+    models:
+      glm-4-plus:
+        input: 4.0
+        output: 16.0
+      glm-4-flash:
+        input: 0.0
+        output: 0.0
+      glm-4-air:
+        input: 0.5
+        output: 0.5
+  openai:
+    default:
+      input: 15.0
+      output: 60.0
+    models:
+      gpt-4o-mini:
+        input: 1.1
+        output: 4.4
